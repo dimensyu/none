@@ -1,5 +1,5 @@
-#ifndef __NONE_PROC_H__
-#define __NONE_PROC_H__
+#ifndef __KERNEL_TASK_H__
+#define __KERNEL_TASK_H__
 #include <none/object.h>
 #include <none/list.h>
 /*!

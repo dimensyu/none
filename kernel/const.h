@@ -1,15 +1,11 @@
-#ifndef __NONE_CONST_H__
-#define __NONE_CONST_H__
+#ifndef __KERNEL_CONST_H__
+#define __KERNEL_CONST_H__
 
 #define IDT_TABLE       0x200000        /* 中断描述符表 0x200000 ~ 0x200800 */
 #define TSS_TABLE       0x200800        /* 调度程序使用的TSS描述符 0x200800 ~ 0x200900 */
 #define GDT_TABLE       0x200900        /* GDT描述符表 0x200900 ~ 0x202900 */
 
 #define _va(p)
-
-
-#define HARD_INT        1
-#define GET_TIME        2
 
 #define KERNEL_CODE     0x08
 #define KERNEL_DATA     0x10
@@ -51,6 +47,5 @@
 /*! #define PRI_SERVER  1 !*/
 #define PRI_USER    1
 #define PRI_GOD     2
-
 
 #endif
