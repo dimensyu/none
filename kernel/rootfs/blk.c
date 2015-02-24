@@ -23,7 +23,7 @@ static unsigned long get_indir(struct inode *inode,
 
 /*! 之前对minix 2文件系统了解不多,没有二次,三次间接块,这次参考grub2写这个函数 !*/
 #define _MAX_ZONE(s)   FULL_BLOCK(s)
-static unsigned long  v2_zone(struct inode *inode,unsigned long zone){
+static unsigned long  get_zone(struct inode *inode,unsigned long zone){
     struct super_block *sb = inode_sb(inode);
     struct minix_sb_info *sbi = sb_info(sb);
     struct minix_inode_info *minix_inode = inode_info(inode);
@@ -55,19 +55,24 @@ static unsigned long  v2_zone(struct inode *inode,unsigned long zone){
         indir = get_indir(inode,zone,zone % ZONE_PER_BLOCK);
         return indir;
     }
-    mfs_err("get_zone failure,%d",__LINE__);
+    mfs_err("can't find zone(%d).\n",zone);
     return 0;
 }
-/*! 读写inode节点的zone区块 !*/
-int zone_rw(struct inode *inode,int cmd,unsigned long zone,void *buff){
-    off_t   offset;
-    object_t   dev = inode->i_rdev;
 
-    offset = v2_zone(inode,zone);
-    if(offset == 0){
-        mfs_err("zone_rw : offset is bad,at zone %x",zone);
-        return ERROR;
-    }
-    //fs_log("block(%d).\n",dev);
-    return blk_rw(dev,cmd,buff,offset,1);
+int blk_read(struct inode *inode,unsigned long zone,void *buff) {
+    off_t offset;
+    object_t rdev = inode->i_rdev;
+    offset = get_zone(inode,zone);
+    if(offset == 0)
+        return -EINVAL;
+    return blk_rw(rdev,IF_READPAGE,buff,offset,1);
+}
+
+int blk_write(struct inode *inode,unsigned long zone,void *buff) {
+    off_t offset;
+    object_t rdev = inode->i_rdev;
+    offset = get_zone(inode,zone);
+    if(offset == 0)
+        return -EINVAL;
+    return blk_rw(rdev,IF_WRITEPAGE,buff,offset,1);
 }
