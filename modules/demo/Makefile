@@ -6,7 +6,7 @@
 STATIC_LIBARY :=  posix c
 subdir		  := true
 
-ifeq ($(root_dir),"")
+ifeq ($(root_dir),)
 $(error Undefined project root directory, you should run the 'source tools/setenv.sh' in the project root directory.)
 else
 include $(root_dir)/tools/Makefile.rule

@@ -10,7 +10,7 @@ ENTRY 		  := 0xc00000
 #LDFLAGS	 	  := -e main
 CLEANS		  := $(basename $(wildcard *.c))
 
-ifeq ($(root_dir),"")
+ifeq ($(root_dir),)
 $(error Undefined project root directory, you should run the 'source tools/setenv.sh' in the project root directory.)
 else
 include $(root_dir)/tools/Makefile.rule
