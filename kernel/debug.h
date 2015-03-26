@@ -4,22 +4,25 @@
 #define DEBUG
 #define TODO
 
-#define FS_LOG
-#define SYS_LOG
-//#define MM_LOG
+//#define FS_DBG
+//#define SYS_DBG
+//#define MM_DBG
 //#define PRINT_SCHED
 
-#define err(own,fmt,...)    printk("[\er%6s\ew] : "fmt,own,##__VA_ARGS__)
+#define err(own,fmt,...)    printk("[\er%6s\ew] "fmt,own,##__VA_ARGS__)
+#define log(own,fmt,...)    printk("[\eb%6s\ew] "fmt,own,##__VA_ARGS__)
+
 #ifdef DEBUG
-#define  dbg(own,fmt,...)  printk("[%6s] : "fmt,own,##__VA_ARGS__)
+#define  dbg(own,fmt,...)   printk("[%6s] "fmt,own,##__VA_ARGS__)
 #else
 #define dbg(...)
 #endif
 
 #ifdef TODO
-#define todo(fmt,...)   printk("[\egTODO  \ew] : "fmt" %s:%d\ew\n",##__VA_ARGS__,__FILE__,__LINE__)
+#define todo(fmt,...)   printk("[\egTODO  \ew] "fmt" %s:%d\ew\n",##__VA_ARGS__,__FILE__,__LINE__)
 #else
 #define todo(...)
 #endif
+
 
 #endif

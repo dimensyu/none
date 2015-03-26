@@ -35,7 +35,6 @@ int main(int argc,char **argv){
             }
             close(curr);
         }
-        printf("\n");
     }
     return 0;
 }

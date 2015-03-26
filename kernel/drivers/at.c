@@ -22,6 +22,8 @@
 #define port_write(port,buf,nr)\
     __asm__("cld;rep;outsw"::"d"(port),"S"(buf),"c"(nr))
 
+#define at_log(fmt,...) log("AT Harddisk",fmt,##__VA_ARGS__)
+
 
 typedef struct _ioInq{
     object_t    caller;                 /*! 请求对象    !*/
@@ -79,7 +81,7 @@ static bool at_isbusy(void){
         if( s == (ATS_READY | ATS_SEEK)) 
             return false;
     }
-    printk("\erAT DiskHard controller time out \n\ew");
+    at_log("AT DiskHard controller time out.\n");
     return true;
 }
 
@@ -170,7 +172,7 @@ static void _io(object_t unused(caller),int status){
                 for(int i = 50000;i && !(inb_p(AT_STATUS) & ATS_DRQ);i--);
                 port_write(AT_DATA,buffer,256);
             } else  {
-                printk("At command %x is unkonw.\n",admit->cmd);
+                at_log("At command %x is unkonw.\n",admit->cmd);
                 panic("\erHardware IO \eb[\erFail\eb]\n");
             }
             admit->buffer += 512;

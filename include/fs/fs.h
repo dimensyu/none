@@ -26,6 +26,7 @@ struct inode {
 
     unsigned short      i_bytes;
     unsigned int        i_blkbits;
+    unsigned long       i_nlinks;
     blkcnt_t            i_blocks;
 
     u64                 i_version;
@@ -57,9 +58,10 @@ struct super_block {
 };
 
 struct file{
-    struct inode *inode;
-    off_t   offset;
     cnt_t   cnt;
+    off_t   offset;
+    struct inode *inode;
+    unsigned long flags;
 };
 
 struct dentry {
@@ -95,5 +97,9 @@ int sb_bwrite(struct super_block *sb,void *buff,off_t offset);
 void generic_seek(object_t caller,int whence,off_t offset);
 void generic_mount(object_t caller,object_t mnt,umode_t mode);
 void generic_umount(object_t caler);
+void drop_nlink(struct inode *inode);
+void clear_nlink(struct inode *inode);
+void inc_nlink(struct inode *inode);
+void set_nlink(struct inode *inode,unsigned long nlink);
 
 #endif

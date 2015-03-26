@@ -4,28 +4,9 @@
 
 #define inode_entry(i)  container_of(i,struct inode,i_list)
 #define I_OFFSET(sbi,n) (2 + sbi->s_imap_blocks + sbi->s_zmap_blocks + n)
-#define ZONE_PER_BLOCK(x) (sbi->s_version == MINIX_V1 ?\
-        (BLOCK_SIZE / sizeof(unsigned short)) :\
-        (BLOCK_SIZE / sizeof(unsigned long)))
-
-static inline unsigned long _get(struct minix_sb_info *sbi,
-        void *bb,int num) {
-    if(sbi->s_version == MINIX_V1)
-        return ((unsigned short *)bb)[num];
-    return ((unsigned long *)bb)[num];
-}
-
-static inline void _set(struct minix_sb_info *sbi,
-        void *bb,int num,unsigned long indir) {
-    if(sbi->s_version == MINIX_V1)
-        ((unsigned short *)bb)[num] = indir;
-    else if(sbi->s_version == MINIX_V2)
-        ((unsigned long *)bb)[num] = indir;
-}
-
 static unsigned long __indir_map(struct inode *inode,
         unsigned long blk,int num,bool create) {
-    DECAL_INODE(inode);
+    DECAL_SB(inode);
     void *bb;
     unsigned long indir = 0;
     bb = kalloc(BLOCK_SIZE);
@@ -126,12 +107,12 @@ static struct inode *minix_special_inode(struct super_block *sb,
     struct minix_inode_info *minix_inode;
     struct minix_sb_info *sbi;
     if(!sb || !raw_inode || !ino){
-        fs_log("sb(%p),raw_inode(%p),ino(%d).\n",sb,raw_inode,ino);
+        fs_dbg("sb(%p),raw_inode(%p),ino(%d).\n",sb,raw_inode,ino);
         return NULL;
     }
     inode = kalloc(sizeof(*inode) + sizeof(struct minix_inode_info));
     if(!inode) {
-        fs_log("memory out.\n");
+        fs_dbg("memory out.\n");
         return NULL;
     }
     minix_inode = inode_info(inode);
@@ -149,7 +130,7 @@ static struct inode *minix_special_inode(struct super_block *sb,
         inode->i_ctime.tv_sec = v1->i_time;
         inode->i_atime.tv_sec = time(NULL);
         inode->i_size = v1->i_size;
-        minix_inode->i_nlinks = v1->i_nlinks;
+        inode->i_nlinks = v1->i_nlinks;
         for(unsigned long i = 0;i < sbi->s_dzones;i++)
             minix_inode->i_zone[i] = v1->i_zone[i];
         minix_inode->indir_zone = v1->i_zone[sbi->s_dzones];
@@ -163,7 +144,7 @@ static struct inode *minix_special_inode(struct super_block *sb,
         inode->i_atime.tv_sec = v2->i_atime;
         inode->i_mtime.tv_sec = v2->i_mtime;
         inode->i_ctime.tv_sec = v2->i_ctime;
-        minix_inode->i_nlinks = v2->i_nlinks;
+        inode->i_nlinks = v2->i_nlinks;
         for(unsigned long i = 0;i < sbi->s_dzones;i++)
             minix_inode->i_zone[i] = v2->i_zone[i];
         minix_inode->indir_zone = v2->indir_zone;
@@ -193,7 +174,7 @@ void minix_sync_inode(struct inode *inode) {
         v1->i_gid = inode->i_gid;
         v1->i_time = inode->i_mtime.tv_sec;
         v1->i_size = inode->i_size;
-        v1->i_nlinks = mi->i_nlinks;
+        v1->i_nlinks = inode->i_nlinks;
         for(unsigned long i = 0;i < sbi->s_dzones;i++)
             v1->i_zone[i] = mi->i_zone[i];
         v1->i_zone[sbi->s_dzones] = mi->indir_zone;
@@ -207,20 +188,20 @@ void minix_sync_inode(struct inode *inode) {
         v2->i_ctime = inode->i_ctime.tv_sec;
         v2->i_atime = inode->i_atime.tv_sec;
         v2->i_size = inode->i_size;
-        v2->i_nlinks = mi->i_nlinks;
+        v2->i_nlinks = inode->i_nlinks;
         for(unsigned long i = 0;i < sbi->s_dzones;i++)
             v2->i_zone[i] = mi->i_zone[i];
         v2->indir_zone = mi->indir_zone;
         v2->double_indir_zone = mi->double_indir_zone;
         v2->triple_indir_zone = mi->triple_indir_zone;
-        fs_log("v2(mode : %o,size : %d).\n",v2->i_mode,v2->i_size);
+        fs_dbg("v2(mode : %o,size : %d).\n",v2->i_mode,v2->i_size);
     } else {
         mfs_err("only suport minix filesystem v1 | v2.\n");
         return;
     }
     blk = mi->i_rawdata - 
         in * sbi->s_inosize;
-    fs_log("blk offset (%p,%d).\n",blk,I_OFFSET(sbi,bn));
+    fs_dbg("blk offset (%p,%d).\n",blk,I_OFFSET(sbi,bn));
     sb_bwrite(sb,blk,I_OFFSET(sbi,bn));
 }
 

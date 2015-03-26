@@ -8,19 +8,18 @@
 #include <x86/bitops.h>
 #include <stdbool.h>
 
-#ifdef FS_LOG
-#define fs_log(fmt,...) dbg("ROOTFS",fmt,##__VA_ARGS__)
+#ifdef FS_DBG
+#define fs_dbg(fmt,...) dbg("ROOTFS",fmt,##__VA_ARGS__)
 #else
-#define fs_log(...)
+#define fs_dbg(...)
 #endif
+#define fs_log(fmt,...) log("ROOTFS",fmt,##__VA_ARGS__)
 
 #define mfs_err(fmt,...) err("ROOTFS",fmt,##__VA_ARGS__)
 #define pname(name,nlen) ({\
         for(int i = 0;i < nlen && name[i];i ++)\
         printk("%c",name[i]);\
         })
-
-struct inode *root;
 
 #define minix_set_bit(nr,addr) \
     __set_bit((nr),(unsigned long*)(addr))
@@ -35,7 +34,6 @@ struct inode *root;
 
 #define current_fsuid() 0
 struct minix_inode_info {
-    unsigned long i_nlinks;
     unsigned long i_zone[V2_NR_DZONES]; 
     unsigned long indir_zone;
     unsigned long double_indir_zone;
@@ -74,6 +72,7 @@ int inode_bwrite(struct inode *inode,void *buff,unsigned long zone);
 
 /* bitmap.c */
 unsigned long minix_new_block(struct inode *inode);
+void minix_free_block(struct inode *inode,unsigned long block);
 void minix_free_inode(struct inode *inode);
 
 /* inode.c */
@@ -84,20 +83,46 @@ struct inode *minix_new_inode(struct inode *dir,mode_t mode,int *error);
 void minix_set_inode(struct inode *inode,object_t rdev);
 void minix_sync_inode(struct inode *inode);
 
+/* truncate */
+void truncate(struct inode *inode);
 /* dir.c */
 unsigned long minix_inode_by_name(struct inode *dir,
         String name,size_t nlen);
 
 /* namei.c */
-object_t normal_open(struct inode *inode,String name,umode_t mode);
-object_t mount_open(struct inode *inode,String name,umode_t mode);
-int      open_namei(String pathname,int flag,umode_t mode,struct inode **res_inode);
-int      minix_mkdir(String pathname,umode_t mode);
-int      minix_rmdir(String name);
+object_t mount_open(struct inode *inode,String name,
+        umode_t mode);
+object_t normal_open(struct inode *inode,String name,
+        int flag,umode_t mode);
+int      open_namei(struct inode *root,String pathname,
+        int flag,umode_t mode,struct inode **res_inode);
+int      minix_mkdir(struct inode *root,String pathname,
+        umode_t mode);
+int      minix_rmdir(struct inode *root,String name);
 
 /* rw.c */
 void minix_read(object_t o,void *buffer,cnt_t count);
 void minix_write(object_t o,void *buffer,cnt_t count);
+
+#define ZONE_PER_BLOCK(sbi) (sbi->s_version == MINIX_V1 ?\
+        (BLOCK_SIZE / sizeof(unsigned short)) :\
+        (BLOCK_SIZE / sizeof(unsigned long)))
+
+static inline unsigned long _get(struct minix_sb_info *sbi,
+        void *bb,int num) {
+    if(sbi->s_version == MINIX_V1)
+        return ((unsigned short *)bb)[num];
+    return ((unsigned long *)bb)[num];
+}
+
+static inline void _set(struct minix_sb_info *sbi,
+        void *bb,int num,unsigned long indir) {
+    if(sbi->s_version == MINIX_V1)
+        ((unsigned short *)bb)[num] = indir;
+    else if(sbi->s_version == MINIX_V2)
+        ((unsigned long *)bb)[num] = indir;
+}
+
 
 #define DECAL_INODE(x) \
     struct super_block *sb = inode_sb(x);\

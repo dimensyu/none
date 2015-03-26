@@ -16,9 +16,8 @@ static u32 count_free(u8 *map[],unsigned blocksize,u32 numbits) {
 }
 
 void minix_free_block(struct inode *inode,unsigned long block) {
-    struct super_block *sb = inode_sb(inode);
-    struct minix_sb_info *sbi = sb_info(sb);
     u8 *ib;
+    DECAL_SB(inode);
     int k = BLOCK_SHIFT + 3;
     unsigned long bit,zone;
 
@@ -83,10 +82,10 @@ unsigned long minix_count_free_blocks(struct super_block *sb) {
 }
 
 static inline void minix_clear_inode(struct inode *inode) {
-    struct minix_inode_info * mi = inode_info(inode);
-    mi->i_nlinks = 0;
+    inode->i_nlinks = 0;
     inode->i_mode = 0;
-    todo("clear_inode : sync inode.\n");
+    truncate(inode);
+    minix_sync_inode(inode);
 }
 
 void minix_free_inode(struct inode *inode) {
@@ -161,6 +160,7 @@ struct inode *minix_new_inode(struct inode *dir,mode_t mode,int *error) {
         return NULL;
     minix_inode_init_owner(inode,dir,mode);
     inode->i_ino = j;
+    inode->i_nlinks = 0;
     inode->i_mtime.tv_sec = inode->i_atime.tv_sec 
         = inode->i_ctime.tv_sec = time(NULL);
     *error = 0;
