@@ -1,7 +1,7 @@
 #include "object.h"
-#include "nosh.tab.h"
 #include <stdio.h>
 
+int yyparse (void);
 int main(void) {
     initialObject();
     printf("? ");

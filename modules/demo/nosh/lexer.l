@@ -10,7 +10,7 @@ FILE *stdin = &STDIN,*stdout = &STDOUT;
 
 %{
 #include "object.h"
-#include "nosh.tab.h"
+#include "parser.h"
 %}
 
 d       [0-9]
