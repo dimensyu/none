@@ -56,8 +56,3 @@ menuentry 'none OS' {
 ```
 重新开机,在grub2启动菜单选择none OS即可运行none.
 
-
-<h3 id="about-this">关于这份文档</h3>
-
-这份文档使用`markdown`编写,编译工具是`pandoc`,文档的源码可通过[](https://naiz.biz/none/user-manual.md)下载.
-

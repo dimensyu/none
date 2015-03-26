@@ -8,7 +8,8 @@
 
 # Directories.
 out_dir  	:= out
-ramdisk 	:= img/c.img #ramdisk.img
+#ramdisk 	:= img/ramdisk.img
+ramdisk 	:= img/c.img
 disk		:= img/c.img
 kernel_bin 	:= $(out_dir)/bin/none 
 kernel_dir  := $(out_dir)/mnt/disk

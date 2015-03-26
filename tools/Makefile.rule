@@ -140,13 +140,13 @@ $(out_dir)/%.o: %.s
 	$Q $(AS) $< -o $@ $(a_flags) -c
 
 $(out_dir)/lexer.o: lexer.l
-	$Q echo  "  [FX]    $@"
+	$Q echo  "  [FX]	$@"
 	$Q flex --nounistd -o $(@:.o=.c) $<
 	$Q sed -i 's/<inttypes\.h>/"stdint\.h"/g' $(@:.o=.c)
 	$Q $(CC) -c -I./ $(@:.o=.c) $(c_flags) -o $@
 
 $(out_dir)/parser.o: parser.y
-	$Q echo  "  [BN]    $@"
+	$Q echo  "  [BN]	$@"
 	$Q bison $< -d -o $(@:.o=.c)
 	$Q $(CC) -c -I./ $(@:.o=.c) $(c_flags) -o $@
 
