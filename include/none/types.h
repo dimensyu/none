@@ -41,8 +41,6 @@ typedef _Atomic int64_t  atomic_s64;
 
 typedef const char * String;
 
-typedef int (*IrqHandler)(object_t,int);
-
 typedef struct{
     long back_link;
     long esp0;

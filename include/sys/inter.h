@@ -6,13 +6,14 @@
 #include <none/if.h>
 
 typedef enum {
-    GOD = 0,
-    CONS_PID = 1,
-    MM_PID = 3,
-    SYSTEM_PID,
-    CLOCK_PID,
-    RAMDISK_PID = 7,
-    ROOTFS_PID,
+    GOD         = 0,
+    CONS_PID    = 1,
+    MM_PID      = 3,
+    SYSTEM_PID  = 4,
+    BUILTIN_PID = 5,
+    CLOCK_PID   = 7,
+    RAMDISK_PID = 8,
+    ROOTFS_PID  = 9,
 }PID;
 /* System Call type */
 

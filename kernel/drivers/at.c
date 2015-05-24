@@ -1,5 +1,6 @@
 #include "../kernel.h"
 #include "at.h"
+#include <none/scntl.h>
 #include <stdbool.h>
 
 /*!
@@ -22,7 +23,7 @@
 #define port_write(port,buf,nr)\
     __asm__("cld;rep;outsw"::"d"(port),"S"(buf),"c"(nr))
 
-#define at_log(fmt,...) log("AT Harddisk",fmt,##__VA_ARGS__)
+#define at_log(fmt,...) log("ATDisk",fmt,##__VA_ARGS__)
 
 
 typedef struct _ioInq{
@@ -38,7 +39,8 @@ static  IOInq *inq = NULL;     /*! 请求队列,inq总是指向队列中最小�
 static  IOInq *admit = NULL;   /*! 当前处理任务 !*/
 
 /*! 将请求添加到队列中 !*/
-static void _add(IOInq *iq){
+static void _add(IOInq *iq)
+{
     if(!inq){
         inq = iq;
         inq->next = inq;
@@ -60,7 +62,8 @@ static void _add(IOInq *iq){
 }
 
 /*! 从队列中剔除请求,并将资源释放 !*/
-static void _sub(void){
+static void _sub(void)
+{
     if(admit){
         IOInq *next = admit->next;
         IOInq *prev = admit->prev;
@@ -73,7 +76,9 @@ static void _sub(void){
             inq = admit = NULL;
     }
 }
-static bool at_isbusy(void){
+
+static bool at_isbusy(void)
+{
     unsigned char s;
     for(int i = 50000;i;i--){
         s = inb_p(AT_STATUS);
@@ -85,7 +90,8 @@ static bool at_isbusy(void){
     return true;
 }
 
-void at_cmd(u8 cmd,u8 ftr,u8 count,unsigned long long offset,bool slave){
+void at_cmd(u8 cmd,u8 ftr,u8 count,unsigned long long offset,bool slave)
+{
     u8 low,mid,high,device;
     device = 0xE0;
     if(slave) device |= AT_SLAVE;
@@ -104,7 +110,8 @@ void at_cmd(u8 cmd,u8 ftr,u8 count,unsigned long long offset,bool slave){
     outb_p(cmd,AT_COMMAND);
 }
 
-static void _doio(){
+static void _doio()
+{
     int cmd = admit->cmd;
     cnt_t count = admit->count;
     off_t   offset = admit->offset;
@@ -125,7 +132,8 @@ static void _doio(){
 }
 
 /*! 请求的处理 !*/
-static void _rw(object_t caller,int cmd,void *buffer,off_t offset,cnt_t count){
+static void _rw(object_t caller,int cmd,void *buffer,off_t offset,cnt_t count)
+{
     IOInq *in = kalloc(sizeof(IOInq));
     if(in){
         in->caller = caller;
@@ -142,25 +150,21 @@ static void _rw(object_t caller,int cmd,void *buffer,off_t offset,cnt_t count){
         ret(caller,-ENOMEM);
 }
 
-static void at_readpage(object_t caller,void *ptr,cnt_t count,off_t offset) {
+static void at_readpage(object_t caller,void *ptr,cnt_t count,off_t offset) 
+{
     _rw(caller,AT_READ,ptr,offset * 2,count * 2);
 }
 
-static void at_writepage(object_t caller,void *ptr,cnt_t count,off_t offset) {
+static void at_writepage(object_t caller,void *ptr,cnt_t count,off_t offset) 
+{
     _rw(caller,AT_WRITE,ptr,offset * 2,count * 2);
 }
 
-
-static int at_handler(object_t o,int irq){
+/*! 发送读写设备给硬盘,然后返回等待硬盘准备好 !*/
+static void _io(object_t unused(caller),int irq)
+{
     (void)irq;
     int status = inb(AT_STATUS);	/* acknowledge interrupt */
-    doint(o,IF_INTR,status,0,0);
-    return OK;
-}
-
-
-/*! 发送读写设备给硬盘,然后返回等待硬盘准备好 !*/
-static void _io(object_t unused(caller),int status){
     if(admit){
         void *buffer = admit->buffer;
         if(at_isbusy()) 
@@ -190,18 +194,22 @@ static void _io(object_t unused(caller),int status){
     }
 }
 
-
-static void at_init(void){
+static void at_init(void)
+{
+    at_log("Startup...\n");
     hook(IF_WRITEPAGE, at_writepage);
     hook(IF_READPAGE,at_readpage);
     hook(IF_INTR,_io);
-    put_irq_handler(AT_IRQ,at_handler);
+    //put_irq_handler(AT_IRQ,at_handler);
     //enable_irq(AT_IRQ);
+    regirq(AT_IRQ);
     outb_p(AT_RESET,AT_DEVICE_CTL);
 }
 
-int at_main(void){
+int at_main(void)
+{
     at_init();
+    at_log("workloop\n");
     workloop();
     return 0;
 }

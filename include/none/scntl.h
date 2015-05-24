@@ -16,11 +16,11 @@
 #define SIF_PRI     IF_USER1
 #define SIF_DUP2    IF_USER2
 #define SIF_PRIVATE IF_USER3
+#define SIF_REGIRQ  IF_USER4
+#define SIF_INTR    IF_INTR
 #include <sys/inter.h>
-static inline void *self_private(void){
-    return (void*)run0(SYSTEM_PID,SIF_PRIVATE);
-}
 
-
+#define self_private()  (void*)run0(SYSTEM_PID,SIF_PRIVATE)
+#define regirq(irq)     run1(SYSTEM_PID,SIF_REGIRQ,irq)
 
 #endif

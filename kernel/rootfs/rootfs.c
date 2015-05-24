@@ -124,10 +124,10 @@ static void rootfs_super(object_t caller) {
 
 static void rootfs_init(void){
     int error;
-    fs_log("rootfs init.\n");
+    fs_log("Startup...\n");
     super = minix_sget(RAMDISK_PID,&error);
     if(super == NULL) 
-        panic("\erDon't read super block.\ew\n");
+        panic("Don't read super block.\n");
 
     hook(FIF_OPEN ,rootfs_open);
     hook(FIF_MKDIR,rootfs_mkdir);
@@ -136,8 +136,10 @@ static void rootfs_init(void){
     hook(IF_USER14,rootfs_super);
 }
 
-int rootfs_main(void ){
+int rootfs_main(void )
+{
     rootfs_init();
+    fs_log("Workloop\n");
     workloop();
     return 0;
 }

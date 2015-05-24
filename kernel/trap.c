@@ -51,8 +51,7 @@ extern int      sys_call(int EAX,int EBX,int ECX,int EDX);
 
 #define idt  ((unsigned long (*)[2])IDT_TABLE)
 
-IrqHandler irq_table[NR_IRQ_VECTORS];
-object_t irq_object_table[NR_IRQ_VECTORS];
+object_t    irq_table[NR_IRQ_VECTORS];
 
 #define set_int(nr,func,section,attr) {\
     idt[nr][0] = ((((unsigned int)func)&0xffff)|((unsigned short )(section)<<16));\
@@ -62,7 +61,8 @@ object_t irq_object_table[NR_IRQ_VECTORS];
 
 #define exit(n) panic("oop:-_-|\n");
 
-void print_cpu_info(Registers *reg){
+void print_cpu_info(Registers *reg)
+{
     printk("CS  = %010p EIP = %010p    ",reg->cs,reg->eip);
     printk("SS  = %010p ESP = %010p\n",reg->ss,reg->_esp);
     printk("DS  = %010p EDI = %010p    ",reg->ds,reg->edi);
@@ -71,75 +71,93 @@ void print_cpu_info(Registers *reg){
     printk("EBX = %010p EDX = %010p\n",reg->ebx,reg->edx);
 }
 
-static void print_task_info(String str,long nr){
+static void print_task_info(String str,long nr)
+{
     printk("\erTrap: %s %x.\nObject<%p>:%ld,%s\ew\n",str,nr,self(),self()->id,self()->name);
 }
 
-static inline void die(String str,long *reg,long nr){
+static inline void die(String str,long *reg,long nr)
+{
     print_task_info(str,nr);
     print_cpu_info((void*)(reg - 1));
     run(MM_PID,MIF_CLOSE,0,0,0);
     /* panic(":-("); */
 }
 
-extern void do_divide_error(long code,long *reg){
+extern void do_divide_error(long code,long *reg)
+{
     die("divede error",reg,code);
 }
 
-extern void do_debug(long code,long *reg){
+extern void do_debug(long code,long *reg)
+{
     die("debug traps",reg,code);
     printk("This debug!,But the code no ready![TRAP]\n");
 }
 
-extern void do_nmi(long code,long *reg){
+extern void do_nmi(long code,long *reg)
+{
     die("nmi error!",reg,code);
 }
 
-extern void do_breakpoint(long code,long *reg){
+extern void do_breakpoint(long code,long *reg)
+{
     die("breakpoint traps.",reg,code);
     printk("code no ready![TRAP]\n");
 }
-extern void do_overflow(long code,long *reg){
+
+extern void do_overflow(long code,long *reg)
+{
     die("overflow",reg,code);
 }
 
-extern void do_bounds_check(long code,long *reg){
+extern void do_bounds_check(long code,long *reg)
+{
     die("bounds",reg,code);
 }
 
-extern void do_inval_opcode(long code,long *reg){
+extern void do_inval_opcode(long code,long *reg)
+{
     die("invalid operand",reg,code);
 }
 
-extern void do_copr_not_available(long code,long *reg){
+extern void do_copr_not_available(long code,long *reg)
+{
     die("copr not available.",reg,code);
 }
 
-extern void do_double_fault(long code,long *reg){
+extern void do_double_fault(long code,long *reg)
+{
     die("double fault",reg,code);
 }
 
-extern void do_copr_seg_overrun(long code,long *reg){
+extern void do_copr_seg_overrun(long code,long *reg)
+{
     die("copr segment overrun",reg,code);
 }
 
-extern void do_inval_tss(long code,long *reg){
+extern void do_inval_tss(long code,long *reg)
+{
     die("inval tss",reg,code);
 }
 
-extern void do_segment_not_present(long code,long *reg){
+extern void do_segment_not_present(long code,long *reg)
+{
     die("segment not present",reg,code);
 }
 
-extern void do_stack_exception(long code,long *reg){
+extern void do_stack_exception(long code,long *reg)
+{
     die("stack segment",reg,code);
 }
 
-extern void do_general_protection(long code,long *reg){
+extern void do_general_protection(long code,long *reg)
+{
     die("general protection",reg,code);
 }
 
-extern void do_page_fault(long code,long *reg){
+extern void do_page_fault(long code,long *reg)
+{
     (void)reg;
     void* cr2 = (void*)getcr2();
     if(!(code & 0x1)){
@@ -149,20 +167,24 @@ extern void do_page_fault(long code,long *reg){
     }
 }
 
-extern void do_copr_error(long code,long *reg){
+extern void do_copr_error(long code,long *reg)
+{
     die("copr error",reg,code);
 }
 
-extern void do_none(long code,long *reg){
+extern void do_none(long code,long *reg)
+{
     die("what the fuck!",reg,code);
 }
 
-extern void _null(void){
+extern void _null(void)
+{
     // die("-_-!",1);
     ;
 }
 
-extern void disable_irq(int irq){
+extern void disable_irq(int irq)
+{
     unsigned char mask;
     unsigned char ctl;
     if(NR_IRQ_VECTORS < irq || 0 > irq)
@@ -181,7 +203,8 @@ extern void disable_irq(int irq){
     sti();
 }
 
-extern void enable_irq(int irq){
+extern void enable_irq(int irq)
+{
     unsigned char mask;
     unsigned char ctl;
     if(NR_IRQ_VECTORS < irq || 0 > irq)
@@ -199,29 +222,27 @@ extern void enable_irq(int irq){
     sti();
 }
 
-static int spurious_irq(object_t o,int irq){
-    (void)o;
+extern void irq_handler(int irq)
+{
     if(irq < 0 || irq >= NR_IRQ_VECTORS)
         panic("invalid call to spurious_irq");
-    printk("spurious irq %d \n",irq);
-    return 1;
+    doint(irq_table[irq],IF_INTR,irq,0,0);
 }
 
-extern void put_irq_handler(int irq,IrqHandler handler){
+extern int put_irq_handler(object_t o,int irq)
+{
     if(irq < 0 || irq >= NR_IRQ_VECTORS)
-        panic("invalid call to put_irq_handler");
-    if(irq_table[irq] == handler)
-        return;
-    if(irq_table[irq] != spurious_irq)
-        panic("attempt to register second irq handler for irq");
+        return -ERANGE;
+    if(irq_table[irq] != SYSTEM_PID)
+        return -EEXIST;
     disable_irq(irq);
-    irq_table[irq] = handler;
-    irq_object_table[irq] = self()->id;
+    irq_table[irq] = o;
     enable_irq(irq);
+    return OK;
 }
 
-extern void trap_init(void){
-
+extern void trap_init(void)
+{
     /* install defualt int */
     for(int i = 0;i<256;i++) set_int(i,none,KERNEL_CODE,(INT_GATE|IDT_R0));
     set_int(0,divide_error,KERNEL_CODE,((TRA_GATE|IDT_R0)));
@@ -262,7 +283,8 @@ extern void trap_init(void){
     set_int(0x80,sys_call,KERNEL_CODE,(INT_GATE|IDT_R3));
     set_int(0x81,switch_task,KERNEL_CODE,(INT_GATE|IDT_R3));
 
-    for(int i = 0;i < NR_IRQ_VECTORS;i++) irq_table[i] = spurious_irq;
+    for(int i = 0;i < NR_IRQ_VECTORS;i++) 
+        irq_table[i] = SYSTEM_PID;
 
     /* 8259a */
     outb_p(0x11,INT_CTL);

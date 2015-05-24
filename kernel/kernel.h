@@ -27,8 +27,6 @@ extern Task *leading;
 extern void sched(void);
 extern int doint(object_t obj,unsigned long fn,unsigned long r1,unsigned long r2,unsigned long r3);
 
-extern IrqHandler irq_table[NR_IRQ_VECTORS];
-
 #define proc_number(rp) ((rp)->pid)
 #define proc_addr(pid)  (task[pid])
 
@@ -53,7 +51,8 @@ extern IrqHandler irq_table[NR_IRQ_VECTORS];
 
 #define SET_ERR(n) ({errno = n;})
 
-static inline  void clear_methon(void) {
+static inline  void clear_methon(void) 
+{
     for(int i = 0;i < NR_METHON;i++)
         hook(i,NULL);
 }
@@ -63,7 +62,7 @@ void print_cpu_info(Registers *reg);
 /* */
 extern void disable_irq(int irq);
 extern void enable_irq(int irq);
-extern void put_irq_handler(int irq,IrqHandler handler);
+extern int  put_irq_handler(object_t o,int irq);
 
 extern void* get_free_page(void);
 extern void* get_kfree_page(void);

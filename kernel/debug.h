@@ -1,12 +1,12 @@
 #ifndef __DEBUG_H__
 #define __DEBUG_H__
 
-#define DEBUG
+//#define DEBUG
 #define TODO
 
-//#define FS_DBG
-//#define SYS_DBG
-//#define MM_DBG
+#define FS_DBG
+#define SYS_DBG
+#define MM_DBG
 //#define PRINT_SCHED
 
 #define err(own,fmt,...)    printk("[\er%6s\ew] "fmt,own,##__VA_ARGS__)

@@ -212,10 +212,12 @@ static void cons_read(object_t caller,void *ptr,cnt_t count){
 }
 
 int cons_main(void){
+    log("CONSOL","Startup...\n");
     cons_init();
     keyboard_init();
     hook(IF_READ ,cons_read);
     hook(IF_WRITE,cons_write);
+    log("CONSOL","Workloop\n");
     workloop();
     return 0;
 }

@@ -35,6 +35,8 @@
 .globl  sched
 .globl  doloop
 .globl  switch_task
+.globl  irq_handler
+.globl  clock_handler
 
 .globl hwint00 , hwint01 , hwint02 , hwint03 ,  hwint04 ,  hwint05 ,  hwint06 ,  hwint07 
 .globl hwint08 , hwint09 , hwint10 , hwint11 ,  hwint12 ,  hwint13 ,  hwint14 ,  hwint15
@@ -200,12 +202,10 @@ none:
     outb    %al,$INT_CTLMASK;    \
     movb    $0x20,%al;   \
     outb    %al,$INT_CTL; \
-    movl    $irq,%eax;\
     sti; \
     push    $irq;   \
-    pushl   irq_object_table(,%eax,4);\
-    call    *irq_table(,%eax,4);    \
-    addl    $8,%esp;    \
+    call    irq_handler;    \
+    addl    $4,%esp;    \
     cli; \
     inb     $INT_CTLMASK,%al;    \
     andb    $(~(1<<(irq))),%al; \
@@ -228,13 +228,23 @@ hwint00:
 
     incl    jiffies
 
-    pushl   $0
-    movl    $0,%eax
-    pushl   irq_object_table(,%eax,4)
-    call    *irq_table(,%eax,4)
-    addl    $8,%esp
-    sched_task;
+## if(leading->count) leading->ucount--;
+    movl    leading,%ebx
+    movl    ucount(%ebx),%eax
+    testl   %eax,%eax
+    je      0f
+    decl    ucount(%ebx)
 0:
+##  if(!(jiffies & 0x3ff))  call irq_handler
+    movl    jiffies,%eax
+    andl    $0x3ff,%eax
+    je      0f
+
+    pushl   $0
+    call    irq_handler
+    addl    $4,%esp
+0:
+    sched_task;
     inb     $INT_CTLMASK,%al;    
     andb    $(~1),%al; 
     outb    %al,$INT_CTLMASK;    
@@ -265,12 +275,10 @@ hwint07:
     outb    %al,$INT_CTL; \
     jmp     .+2;     \
     outb    %al,$INT2_CTL;    \
-    movl    $irq,%eax;\
     sti;     \
     pushl   $irq;   \
-    pushl   irq_object_table(,%eax,4);\
-    call    *irq_table(,%eax,4);  \
-    addl    $8,%esp;\
+    call    irq_handler;  \
+    addl    $4,%esp;\
     cli;         \
     inb     $INT2_CTLMASK,%al;   \
     andb    $(~(1<<(irq-8))),%al;   \

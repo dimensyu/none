@@ -18,7 +18,8 @@ static Tss     *tss;               /*! 保存任务的内核态堆栈,以及IO�
 
 #define TASK_GOD()  TASK(toObject(GOD))   /*! 和上帝对话,我想你大概不会很喜欢他 !*/
 
-static void pick_task(void){
+static void pick_task(void)
+{
     /*! 只有基础服务得于优先运作,我们的工作才有意义 !*/
 
 #ifdef  PRINT_SCHED
@@ -34,12 +35,13 @@ static void pick_task(void){
     tss->esp0 = (unsigned long)(STACK(leading)->stackp);
 #ifdef  PRINT_SCHED
     if(oo != self() && oo->id && self()->id){
-        printk("\eb%s:%d \er-> \eb%s:%d<%x>\ew\n",oo->name,oo->id,self()->name,self()->id,leading->core);
+        printk("\eb[%02d]%14s\er-> \eb[%02d]%14s<%08x>\ew\n",oo->id,oo->name,self()->id,self()->name,leading->core);
     }
 #endif
 }
 
-void sched(void){
+void sched(void)
+{
     if(rdy_head[PRI_USER] && !(rdy_head[PRI_USER]->ucount)){
         rdy_tail[PRI_USER]->next = rdy_head[PRI_USER];
         rdy_tail[PRI_USER] = rdy_head[PRI_USER];
@@ -51,7 +53,8 @@ void sched(void){
 }
 
 /*! 接受党和人民考验的时候到了,是时候派我上场啦?你是说我还要排队,shit !*/
-static void ready(Task *rt){
+static void ready(Task *rt)
+{
     if(!rt) panic("\erReady \eb[rTask is <null>\eb]");
     if(!rdy_head[rt->pri])
         rdy_head[rt->pri] = rt;
@@ -61,7 +64,8 @@ static void ready(Task *rt){
     rdy_tail[rt->pri] = rt;
 }
 
-static void unready(Task *rt){
+static void unready(Task *rt)
+{
     Task *xt;
     if(!rt) panic("\erUnready   \eb[\erTask is <null>\eb]");
     if(NULL != (xt = rdy_head[rt->pri])){ 
@@ -77,25 +81,29 @@ static void unready(Task *rt){
     do_switch();
 }
 
-static void _sleep(Object *obj){
+static void _sleep(Object *obj)
+{
     setSleep(obj);
     unready(TASK(obj));
 }
 
-static void _wait(Object *obj,Object *wait){
+static void _wait(Object *obj,Object *wait)
+{
     setWait(obj);
     obj->wait = wait;
     unready(TASK(obj));
 }
 
 
-static void _wakeup(Object *obj){
+static void _wakeup(Object *obj)
+{
     setActive(obj);
     obj->wait = NULL;
     ready(TASK(obj));
 }
 
-int dohook(unsigned long fn,Methon hook){
+int dohook(unsigned long fn,Methon hook)
+{
     if(fn < NR_METHON){
         self()->fns[fn] = hook;
         return OK;
@@ -103,7 +111,8 @@ int dohook(unsigned long fn,Methon hook){
     return -EINVAL;
 }
 
-int dofn(object_t o,unsigned long fn,unsigned long r1,unsigned long r2,unsigned long r3){
+int dofn(object_t o,unsigned long fn,unsigned long r1,unsigned long r2,unsigned long r3)
+{
     Object *obj = toObject(o);
     if(!obj) 
         return -ENOBJ;
@@ -127,7 +136,8 @@ int dofn(object_t o,unsigned long fn,unsigned long r1,unsigned long r2,unsigned 
 /*! 中断具有高优先级,必须优先处理 !*/
 static iLink *first_iLink = NULL;
 static cnt_t count_iLink = 0;
-static iLink *alloc_iLink(void) {
+static iLink *alloc_iLink(void) 
+{
     iLink *tmp;
     if(!first_iLink)
         return kalloc(sizeof(*first_iLink));
@@ -137,7 +147,8 @@ static iLink *alloc_iLink(void) {
     return tmp;
 }
 
-static void free_iLink(iLink *ptr) {
+static void free_iLink(iLink *ptr) 
+{
     if(count_iLink < 32) {
         ptr->inext = first_iLink;
         first_iLink = ptr;
@@ -147,7 +158,8 @@ static void free_iLink(iLink *ptr) {
     }
 }
 
-int doint(object_t o,unsigned long fn,unsigned long r1,unsigned long r2,unsigned long r3){
+int doint(object_t o,unsigned long fn,unsigned long r1,unsigned long r2,unsigned long r3)
+{
     Object *obj = toObject(o);
     if(!obj) 
         panic("\er doint   \eb[\rnull\eb]\n");
@@ -166,7 +178,8 @@ int doint(object_t o,unsigned long fn,unsigned long r1,unsigned long r2,unsigned
     return OK;
 }
 
-int doret(object_t o,long talk,long err){
+int doret(object_t o,long talk,long err)
+{
     Object *obj = toObject(o);
     if(obj && isWaitMe(obj)){
         obj->talk = talk;
@@ -176,7 +189,8 @@ int doret(object_t o,long talk,long err){
     return OK;
 }
 
-void doloop(void) {
+void doloop(void) 
+{
     long fn,r1,r2,r3,id;
     long ptr;
 _again:
@@ -211,13 +225,15 @@ _again:
             );
 }
 
-static inline void gam(Object *this){
+static inline void gam(Object *this)
+{
     this->friend[0]         = 6;
     this->friend[1]         = 6;
     this->friend[2]         = 6;
 }
 
-static Task* make_task(id_t id,String name,pointer_t data,pointer_t code,int pri,int (*entry)()){
+static Task* make_task(id_t id,String name,pointer_t data,pointer_t code,int pri,int (*entry)())
+{
     Task *task;
     task = (Task *)get_free_object();
     OBJECT(task)->id = id;
@@ -249,7 +265,8 @@ static Task* make_task(id_t id,String name,pointer_t data,pointer_t code,int pri
     return task;
 }
 
-void god_init(void){
+void god_init(void)
+{
     pointer_t tr = TR_DESC;
 
     //sys_log("god task init.\n");

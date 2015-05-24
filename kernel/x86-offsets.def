@@ -6,4 +6,5 @@ void foo(void);
 void foo(void) {
     OFFSET(core,_task,core);
     OFFSET(registers,_task,registers);
+    OFFSET(ucount,_task,ucount)
 }

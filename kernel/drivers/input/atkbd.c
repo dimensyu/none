@@ -1,7 +1,9 @@
 #include "keyboard.h"
 #include "keymap.h"
 #include <none/if.h>
+#include <none/scntl.h>
 #include <stdbool.h>
+#include <z.h>
 
 #define KB_IN_BYTES 0x32
 #define MAXBUFF 0x100
@@ -12,11 +14,13 @@ struct{
     unsigned char buf[KB_IN_BYTES];
 }kb_in;
 
+#if 0
 #define buf kb_in.buf
 #define head kb_in.head
 #define tail kb_in.tail
 #define full kb_in.full
-static inline void push(unsigned char ch){
+static inline void push(unsigned char ch)
+{
     if((head != tail) || (!full)){
         head = (head + 1) % KB_IN_BYTES;
         buf[head] = ch;
@@ -24,7 +28,8 @@ static inline void push(unsigned char ch){
     }
 }
 
-static inline unsigned char pop(void){
+static inline unsigned char pop(void)
+{
     unsigned char ch = -1;
     if(tail != head || full){
         ch = buf[tail];
@@ -39,28 +44,31 @@ static inline unsigned char pop(void){
 #undef  full
 
 
-static int keyboard_handler(object_t o,int nr){
+static int keyboard_handler(object_t o,int nr)
+{
     (void)nr;
     unsigned char in = inb(0x60);
     push(in);
     doint(o,IF_INTR,0,0,0);
     return OK;
 }
+#endif
 
 static char buffer[MAXBUFF];
 static cnt_t index = 0;
-
 
 static object_t _caller = 0;
 static cnt_t  _count = 0;
 static void     *_buf = NULL;
 
-static void _ispress(object_t caller){
+static void _ispress(object_t caller)
+{
     ret(caller,index);
 }
-static void _input(object_t caller){
-    (void)caller;
-    unsigned int ch = pop();
+static void _input(object_t unused(caller))
+{
+    //unsigned int ch = pop();
+    unsigned char ch = inb(0x60);
     static const unsigned int *str = keymap[0];
     switch(ch){
     case KEY_LEFTSHIFT:
@@ -102,7 +110,8 @@ static void _input(object_t caller){
     }
 }
 
-void copy_buffer(object_t caller,void *buf,cnt_t len){
+void copy_buffer(object_t caller,void *buf,cnt_t len)
+{
     int _v = 0;;
     if(0 == index){
         _caller = caller;
@@ -126,16 +135,19 @@ void copy_buffer(object_t caller,void *buf,cnt_t len){
     }
 }
 
-static void _reset(object_t caller){
+static void _reset(object_t caller)
+{
     outb_p(0xfe,0x64);
     ret(caller,OK);
 }
 
-void keyboard_init(void){
+void keyboard_init(void)
+{
     kb_in.head = kb_in.tail = 0;
     kb_in.full = false;
     hook(IF_INTR,_input);
     hook(IF_CLOSE,_reset);
     hook(IF_USER1,_ispress);
-    put_irq_handler(1,keyboard_handler);
+    regirq(1);
+   // put_irq_handler(1,keyboard_handler);
 }

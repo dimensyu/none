@@ -285,7 +285,8 @@ static struct super_block *minix_alloc_sb(object_t dev,String id) {
     return sb;
 }
 
-struct super_block *minix_sget(object_t dev,int *error){
+struct super_block *minix_sget(object_t dev,int *error)
+{
     struct minix_sb_info *sbi;
     struct super_block *sb;
     struct minix_super_block *msb;

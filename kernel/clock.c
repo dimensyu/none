@@ -1,20 +1,9 @@
 #include <none/time.h>
+#include <none/scntl.h>
 #include "kernel.h"
 
 volatile unsigned long jiffies = 0;
 static  time_t startup_time;
-
-
-/*! 时钟中断,可能不太合群,不太协调,毕竟他是整个系统的脉搏,任务繁重 ~*/
-
-int clock_handler(object_t o,int irq){
-    (void)irq;
-    if(TASK(leading)->ucount)
-        TASK(leading)->ucount--;
-    if(!(jiffies % 1000)) 
-        doint(o,TIF_INTR,0,0,0);   /*!-------!*/
-    return OK;
-}
 
 #define CMOS_READ(addr) ({\
         outb_p(0x80 | addr,0x70);    \
@@ -28,7 +17,8 @@ int clock_handler(object_t o,int irq){
 #define DAY     (24 * HOUR)
 #define YEAR    (365 * DAY)
 
-static time_t mktime(Time *tm){
+static time_t mktime(Time *tm)
+{
     time_t res;
     static const int month[12] = {
         0,
@@ -56,7 +46,8 @@ static time_t mktime(Time *tm){
     return res;
 }
 
-static void cmos_time(void){
+static void cmos_time(void)
+{
     static Time time;
     do{
         time.second = CMOS_READ(0);
@@ -76,26 +67,29 @@ static void cmos_time(void){
     startup_time = mktime(&time);
 }
 
-
-static void get_time(object_t caller){
+static void get_time(object_t caller)
+{
     ret(caller,startup_time);
 }
 
-static void _clk(Object *this){
+static void _clk(Object *unused(this))
+{
     startup_time++;
-    (void)this;
 }
 
-static void clock_init(void){
+static void clock_init(void)
+{
     hook(TIF_GETTIME,get_time);
     hook(TIF_INTR,_clk);
     cmos_time();
     outb_p(0x36,0x43);
     outb_p(LATCH & 0xff,0x40);
     outb_p(LATCH >> 8,0x40);
-    put_irq_handler(0,(IrqHandler)clock_handler);
+    regirq(0);
 }
-int clock_main(void){
+
+int clock_main(void)
+{
     clock_init();
     workloop();
     return 0;
