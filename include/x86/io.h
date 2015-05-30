@@ -1,6 +1,7 @@
 #ifndef __X86_IO_H__
 #define __X86_IO_H__
 #include <none/types.h>
+#include <stddef.h>
 
 /* Basic port I/O */
 static inline void outb(u8 v, u16 port)

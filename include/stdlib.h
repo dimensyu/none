@@ -1,6 +1,7 @@
 #ifndef __STDLIB_H__
 #define __STDLIB_H__
-#include    <none/types.h>
+#include <none/types.h>
+#include <stddef.h>
 
 /*
 //extern void exit(int);

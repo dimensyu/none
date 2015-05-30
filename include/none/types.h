@@ -14,7 +14,6 @@ typedef long off_t;
 typedef long object_t;
 typedef long long loff_t;
 typedef unsigned long pointer_t;
-typedef unsigned long size_t;
 typedef unsigned long cnt_t;
 typedef unsigned long umode_t;
 typedef unsigned long blkcnt_t;

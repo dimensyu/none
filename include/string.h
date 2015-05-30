@@ -1,6 +1,7 @@
 #ifndef _STRING_H_
 #define _STRING_H_
 #include <none/types.h>
+#include <stddef.h>
 
 #ifndef NULL
 #define NULL ((void *) 0)
