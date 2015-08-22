@@ -10,18 +10,6 @@
 typedef struct _object Object;      /*! 对象,none中的一切,当然,现实中很匮乏 ~*/
 typedef struct _ilink   iLink;      /*! 中断请求链 !*/
 
-typedef struct{
-    unsigned    r:1;        /*! 拥有者可访问标志 !*/
-    unsigned    w:1;        /*! 拥有者可修改标志 !*/
-    unsigned    :6;         /*! 保留 !*/
-    unsigned    gr:1;       /*! 同组对象可访问标志 !*/
-    unsigned    gw:1;       /*! 同组对象可更改标志 !*/
-    unsigned    :6;         /*! 保留 !*/
-    unsigned    otr:1;      /*! 其他对象可访问标志 !*/
-    unsigned    otw:1;      /*! 其他对象可修改标志 !*/
-    unsigned    :14;        /*! 保留,将来扩展,比如可知执行 之类 !*/
-}Purview;
-
 struct _ilink{
     Object   *admit;
     int      fn;
@@ -37,7 +25,6 @@ struct _object{
     object_t guid;                       /*! 对象所属分组。 !*/
     object_t awnor;                      /*! 拥有者  !*/
     object_t father;                     /*! 父 !*/
-    Purview prw;                         /*! 对象权限 !*/
     size_t  cnt;                         /*! 对象引用计数，当该标记为0时，系统可以将其释放 !*/
     char    name[OBJECT_NAME_LEN];       /*! 对象名称，用来给人看的，与机器无关 !*/
     pid_t   friend[NR_FRIEND];           /*! friend都是可直接访问的对象,他们是祖先指定的,祖先可信任,则他们就可信任 !*/
@@ -63,7 +50,5 @@ struct _object{
 
 extern Object *object_table[NR_OBJECT];     /*! 对象表,在该表中的对象才是真正的对象 !*/
 extern Object *cloneObject(Object *obj);
-extern object_t byName(String);
-extern object_t byId(id_t id);
 
 #endif

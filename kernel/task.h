@@ -34,18 +34,18 @@ struct _registers{
 
 struct _task{
     Object      object;         /*! Task是一个任务对象,所有对象都继承Object,并且所有对象的实例都直接间接克隆于god !*/
-    cnt_t     count;          /*! 任务当前每次运行的时间片!*/
-    cnt_t     ucount;         /*! 活动任务当前剩余时间片  !*/
+    cnt_t     count;            /*! 任务当前每次运行的时间片!*/
+    cnt_t     ucount;           /*! 活动任务当前剩余时间片  !*/
     int         pri;            /*! 任务优先级              !*/
     Registers   *registers;     /*! 指向任务私有的堆栈结构  !*/
-    pointer_t     core;           /*! 任务的内存空间,cr3      !*/
+    pointer_t     core;         /*! 任务的内存空间,cr3      !*/
     Task        *next,*prev;    /*! 任务链 !*/
 };
 
 struct _stack{
     Task task;
     char stack[PAGE_BYTE - sizeof(Task)];   /*! 内核栈 ~*/
-    char stackp[0];                     /*! 内核栈顶 !*/
+    char stackp[0];                         /*! 内核栈顶 !*/
 };
 
 #define TASK(x)     container_of(x,Task,object)
