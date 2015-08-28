@@ -8,12 +8,13 @@
 
 # Directories.
 out_dir  	:= out
-#ramdisk 	:= img/ramdisk.img
-ramdisk 	:= img/c.img
+ramdisk 	:= img/ramdisk.img
+#ramdisk 	:= img/c.img
 disk		:= img/c.img
-kernel_bin 	:= $(out_dir)/bin/none 
+kernel_bin 	:= $(out_dir)/bin/none
 kernel_dir  := $(out_dir)/mnt/disk
 modules_dir := $(out_dir)/mnt/ramdisk
+cdrom 		:= $(out_dir)/cdrom
 
 LIBDIR 		:= libs
 KERNELDIR 	:= kernel
@@ -46,7 +47,7 @@ modules : libs
 modules_clean :
 	$(Q) $(MAKE) $(q) -C $(MODULESDIR) clean
 
-install : 
+ramdisk.img : 
 	$(Q) echo "Install modules to ramdisk."
 	$(Q) -mount $(ramdisk) $(modules_dir)
 	$(Q) chmod a+w $(modules_dir)
@@ -54,12 +55,17 @@ install :
 	$(Q) -rm -f -- $(modules_dir)/bin/none
 	$(Q) sleep 1
 	$(Q) -umount $(modules_dir)
+
+hard.img:
 	$(Q) echo "Install kernel to hardisk."
 	$(Q) -mount $(disk) $(kernel_dir)
 	$(Q) chmod a+w $(kernel_dir)
 	$(Q) -cp $(kernel_bin) $(kernel_dir)/
-	#$(Q) -cp $(ramdisk) $(kernel_dir)/
+	$(Q) -cp $(ramdisk) $(kernel_dir)/
 	$(Q) sleep 1
+	$(Q) -umount $(kernel_dir)
+
+install : hard.img ramdisk.img
 
 uninstall :
 	$(Q) -umount $(kernel_dir)
@@ -67,6 +73,13 @@ uninstall :
 
 go : install uninstall
 	$(Q) bochs -q
+
+iso : ramdisk.img
+	$(Q) -cp $(kernel_bin) $(cdrom)/ 
+	$(Q) -cp $(ramdisk) $(cdrom)/ 
+	$(Q) -mkdir -p $(cdrom)/boot/grub/
+	$(Q) -cp tools/grub.cfg $(cdrom)/boot/grub/
+	$(Q) grub2-mkrescue -d /usr/lib/grub/i386-pc -o img/none.iso $(cdrom)
 
 clean : libs_clean kernel_clean modules_clean
 	$(Q) -rm -rf -- out/

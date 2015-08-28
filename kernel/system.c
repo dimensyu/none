@@ -70,8 +70,8 @@ static void builtin_task(void)
     }tasks[] = {
         {.name = "Conslo",        .entry = cons_main},
         {.name = "Clock",         .entry = clock_main},
-        //{.name = "Ram Disk",      .entry = ramdisk_main},
-        {.name = "AT Disk",       .entry = at_main},
+        {.name = "Ram Disk",      .entry = ramdisk_main},
+        //{.name = "AT Disk",       .entry = at_main},
         {.name = "rootfs",        .entry = rootfs_main},
     };
 hel:

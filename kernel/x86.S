@@ -221,7 +221,7 @@ switch_task:
 hwint00:
     save;                        
     inb     $INT_CTLMASK,%al;   
-    orb     1,%al;       
+    orb     $1,%al;       
     outb    %al,$INT_CTLMASK;    
     movb    $0x20,%al;   
     outb    %al,$INT_CTL; 

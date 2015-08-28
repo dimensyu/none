@@ -14,45 +14,6 @@ struct{
     unsigned char buf[KB_IN_BYTES];
 }kb_in;
 
-#if 0
-#define buf kb_in.buf
-#define head kb_in.head
-#define tail kb_in.tail
-#define full kb_in.full
-static inline void push(unsigned char ch)
-{
-    if((head != tail) || (!full)){
-        head = (head + 1) % KB_IN_BYTES;
-        buf[head] = ch;
-        if(head == tail) full = true;
-    }
-}
-
-static inline unsigned char pop(void)
-{
-    unsigned char ch = -1;
-    if(tail != head || full){
-        ch = buf[tail];
-        tail = (tail + 1) % KB_IN_BYTES;
-        if(tail == head) full = false;
-    }
-    return ch;
-}
-#undef  buf
-#undef  head
-#undef  tail
-#undef  full
-
-
-static int keyboard_handler(object_t o,int nr)
-{
-    (void)nr;
-    unsigned char in = inb(0x60);
-    push(in);
-    doint(o,IF_INTR,0,0,0);
-    return OK;
-}
-#endif
 
 static char buffer[MAXBUFF];
 static cnt_t index = 0;
@@ -141,13 +102,25 @@ static void _reset(object_t caller)
     ret(caller,OK);
 }
 
+static int scan_keyboard(void)
+{
+    int code;
+    int val;
+
+    code = inb(0x60);
+    val = inb(0x61);
+    outb(val | 0x80,0x61);
+    outb(val,0x61);
+    return code;
+}
+
 void keyboard_init(void)
 {
     kb_in.head = kb_in.tail = 0;
     kb_in.full = false;
+    scan_keyboard();
     hook(IF_INTR,_input);
     hook(IF_CLOSE,_reset);
     hook(IF_USER1,_ispress);
     regirq(1);
-   // put_irq_handler(1,keyboard_handler);
 }

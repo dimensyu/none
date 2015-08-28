@@ -37,4 +37,5 @@ mnt/
 out/
 lib/
 bin/
+img/
 .ycm_extra_conf.py*

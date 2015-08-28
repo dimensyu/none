@@ -51,7 +51,7 @@ extern int      sys_call(int EAX,int EBX,int ECX,int EDX);
 
 #define idt  ((unsigned long (*)[2])IDT_TABLE)
 
-object_t    irq_table[NR_IRQ_VECTORS];
+object_t    irq_table[NR_IRQ_VECTORS] = {-1};
 
 #define set_int(nr,func,section,attr) {\
     idt[nr][0] = ((((unsigned int)func)&0xffff)|((unsigned short )(section)<<16));\
@@ -226,7 +226,11 @@ extern void irq_handler(int irq)
 {
     if(irq < 0 || irq >= NR_IRQ_VECTORS)
         panic("invalid call to spurious_irq");
-    doint(irq_table[irq],IF_INTR,irq,0,0);
+
+    if(irq_table[irq] < 0)
+        printk("Unhandle irq %d %x\n",irq);
+    else
+        doint(irq_table[irq],IF_INTR,irq,0,0);
 }
 
 extern int put_irq_handler(object_t o,int irq)
