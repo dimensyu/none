@@ -33,9 +33,5 @@ GTAGS
 *.src
 
 # 临时文件夹
-mnt/
 out/
-lib/
-bin/
-img/
 .ycm_extra_conf.py*
