@@ -45,7 +45,7 @@ $(ramdisk) : modules
 	$(Q) sleep 1
 	$(Q) su -c 'umount $(modules_dir)'
 
-iso : $(ramdisk) $(none)
+iso : $(none) $(ramdisk)
 	$(Q) echo "Building ISO..."
 	$(Q) mkdir -p $(cdrom)/boot/grub/
 	$(Q) cp tools/grub.cfg $(cdrom)/boot/grub/

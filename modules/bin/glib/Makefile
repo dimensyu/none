@@ -1,16 +1,18 @@
 #
 #	样板Makefile文件,集体项目根据实际情况进行简单修改即可
 #	Author : lzy
-STATIC_LIBARY := posix c fs
-module_name	  := none
+.PHONY:all clean
+# LIBS 
+STATIC_LIBARY := glib posix c
 BUILD		  := BINARY
-ENTRY 		  := 0x361000
-src_dirs 	  := mm drivers drivers/input rootfs
-cleans 		  := offsets.h version.h
+subdir		  := true
+ENTRY 		  := 0xc00000
+#LDFLAGS	 	  := -e main
+c_flags		  := -I$(root_dir)/libs/glib
+CLEANS		  := $(basename $(wildcard *.c))
 
 ifeq ($(root_dir),)
 $(error Undefined project root directory, you should run the 'source tools/setenv.sh' in the project root directory.)
 else
 include $(root_dir)/tools/Makefile.rule
 endif
--include kernel.mk

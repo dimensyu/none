@@ -1,6 +1,6 @@
 typedef struct{
 	 int x,y,xo,yo;
-	int *chars[0xffff];
+	 int *chars[0xffff];
 }font_t;static font_t font = {
 	.x = 18,.y = 19,.xo = 0,.yo = -4,
 	.chars = {

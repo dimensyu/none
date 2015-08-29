@@ -110,6 +110,7 @@ static void setcolor(graphics_t *thiz,color_t color) {
         thiz->color = color;
 }
 
+#if 0
 #if 1
 #include "font14.h"
 static void putchar(graphics_t *thiz,int x,int y,const char ch){
@@ -178,6 +179,8 @@ static void text(graphics_t *thiz,int x,int y,const char *text){
     }
 }
 
+#endif
+
 static void moveto(graphics_t *thiz,int x,int y){
     if(x < thiz->width && y < thiz->height){
         thiz->cur_pixel.x = x;
@@ -195,7 +198,7 @@ graphics_t *newGraphics(void){
         g->circle = circle;
         g->poly = poly;
         g->rectangle = rectangle;
-        g->text = text;
+        //g->text = text;
         g->moveto = moveto;
     }
     return g;
