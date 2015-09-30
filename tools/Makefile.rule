@@ -68,7 +68,9 @@ LD	:= ld
 #	选项
 #########################################################################
 a_flags  += --32
-c_flags  += $(addprefix -I,$(include_dir)) -m32 -std=c11 -fno-builtin -nostdinc -Wall -Werror #-fno-stack-protector 
+c_flags  += $(addprefix -I,$(include_dir)) -m32 -std=c11 -fno-builtin\
+		   	-nostdinc -Wall -Werror -D__NONE__\
+			#-fno-stack-protector 
 
 ########################################################################
 #	中间文件生成

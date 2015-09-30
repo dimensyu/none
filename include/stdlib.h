@@ -10,15 +10,19 @@ extern pid_t fork(void);
 */
 
 extern pid_t fork(void);
-extern int   open(String,int);
+extern int   open(String,int,...);
 extern int   read(int,void*,int);
 extern int   write(int,void*,int);
 extern int   close(object_t);
-extern void  *malloc(size_t );
+extern void *malloc(size_t size);
+extern void free(void *ptr);
+extern void *calloc(size_t nmemb, size_t size);
+extern void *realloc(void *ptr, size_t size);
+extern void abort(void);
+extern int abs(int j);
 extern int   atoi(const char *);
 extern void  srand(unsigned seed);
 extern int   rand(void);
-extern void  free(void *);
 extern off_t lseek(object_t ,off_t ,int);
 extern int   exec(const char *path,int argc,char **argv);
 extern int   execvp(const char *path,char **argv);
