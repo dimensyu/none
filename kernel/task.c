@@ -232,7 +232,7 @@ static inline void gam(Object *this)
     this->friend[2]         = 6;
 }
 
-static Task* make_task(id_t id,String name,pointer_t data,pointer_t code,int pri,int (*entry)())
+static Task* make_task(id_t id,String name,uintptr_t data,uintptr_t code,int pri,int (*entry)())
 {
     Task *task;
     task = (Task *)get_free_object();
@@ -267,7 +267,7 @@ static Task* make_task(id_t id,String name,pointer_t data,pointer_t code,int pri
 
 void god_init(void)
 {
-    pointer_t tr = TR_DESC;
+    uintptr_t tr = TR_DESC;
 
     //sys_log("god task init.\n");
 
@@ -279,7 +279,7 @@ void god_init(void)
 
     tss = (Tss*)(TSS_TABLE);
     tss->ss0 = KERNEL_DATA;
-    tss->esp0 = (pointer_t)(STACK(leading)->stackp);
+    tss->esp0 = (uintptr_t)(STACK(leading)->stackp);
     //tss->gs = tss->fs = tss->es = tss->ds = USER_DATE;
     tss->ldt = 0;
     tss->io = 0xffff0000;

@@ -34,7 +34,7 @@ extern int doint(object_t obj,unsigned long fn,unsigned long r1,unsigned long r2
 
 /* */
 #define getcr3()    ({  \
-        pointer_t _cr3;   \
+        uintptr_t _cr3;   \
         __asm__("movl %%cr3,%0\n\t\t":"=a"(_cr3)); \
         _cr3;   \
         })
@@ -44,7 +44,7 @@ extern int doint(object_t obj,unsigned long fn,unsigned long r1,unsigned long r2
         })
 
 #define getcr2()    ({  \
-        pointer_t _cr2;   \
+        uintptr_t _cr2;   \
         __asm__("movl %%cr2,%0\n\t\t":"=a"(_cr2)); \
         _cr2;   \
         })
@@ -57,7 +57,7 @@ static inline  void clear_methon(void)
         hook(i,NULL);
 }
 extern void trap_init(void);
-extern void mm_init(void);
+extern void mem_init(void);
 void print_cpu_info(Registers *reg);
 /* */
 extern void disable_irq(int irq);
@@ -67,9 +67,9 @@ extern int  put_irq_handler(object_t o,int irq);
 extern void* get_free_page(void);
 extern void* get_kfree_page(void);
 #define get_free_object get_kfree_page
-extern int free_page(pointer_t);
-extern int share_page(pointer_t);
-extern int page_share_nr(pointer_t page);
+extern int free_page(uintptr_t);
+extern int share_page(uintptr_t);
+extern int page_share_nr(uintptr_t page);
 extern int printk(const char *fmt,...);
 extern void printx(const char *data,cnt_t count);
 extern void panic(const char *msg);

@@ -9,8 +9,8 @@ int errno = 0;
 int main(void){
     cli();
     cons_init();
-    printk("Welcome to NONE.\nversion : "KERNEL_VERSION"\n");
-    mm_init();
+    printk("Welcome to NONE.\nVersion : "KERNEL_VERSION"\n");
+    mem_init();
     trap_init();
     god_init();
 }

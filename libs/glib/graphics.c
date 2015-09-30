@@ -110,10 +110,9 @@ static void setcolor(graphics_t *thiz,color_t color) {
         thiz->color = color;
 }
 
-#if 0
 #if 1
 #include "font14.h"
-static void putchar(graphics_t *thiz,int x,int y,const char ch){
+static int putchar(graphics_t *thiz,int x,int y,const char ch){
     int offset;
     uint8_t map;
     offset = ch * 14;
@@ -124,9 +123,11 @@ static void putchar(graphics_t *thiz,int x,int y,const char ch){
                 thiz->pixel(thiz,x + j,y + i);
         }
     }
+    return 8;
 }
 #endif
 
+#if 0
 #include "font.h"
 static int putu(graphics_t *thiz,int x,int y,uint16_t ch){
     struct{
@@ -156,11 +157,11 @@ static int putu(graphics_t *thiz,int x,int y,uint16_t ch){
     return font.x;
 }
 
+#endif
 uint16_t UTF8toUnicode(uint8_t *ch,int len);
 static void text(graphics_t *thiz,int x,int y,const char *text){
     int len = strlen(text);
     uint16_t ch;
-    (void)putu;
     (void)putchar;
     for(int i = 0;i < len;){
         ch = UTF8toUnicode((void*)text + i,len - i);
@@ -174,12 +175,11 @@ static void text(graphics_t *thiz,int x,int y,const char *text){
             i += 2;
         else if(ch <= 0xffff)
             i += 3;
-         x += putu(thiz,x,y,ch);
+         x += putchar(thiz,x,y,ch);
          thiz->cur_pixel.x = x;
     }
 }
 
-#endif
 
 static void moveto(graphics_t *thiz,int x,int y){
     if(x < thiz->width && y < thiz->height){
@@ -198,7 +198,7 @@ graphics_t *newGraphics(void){
         g->circle = circle;
         g->poly = poly;
         g->rectangle = rectangle;
-        //g->text = text;
+        g->text = text;
         g->moveto = moveto;
     }
     return g;

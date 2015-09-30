@@ -1,19 +1,20 @@
 #ifndef __DEBUG_H__
 #define __DEBUG_H__
 
-//#define DEBUG
+#define DEBUG
 #define TODO
 
-#define FS_DBG
-#define SYS_DBG
-#define MM_DBG
-//#define PRINT_SCHED
+#define xFS_DBG
+#define xSYS_DBG
+#define xMM_DBG
+#define MP_DBG
+#define xPRINT_SCHED
 
 #define err(own,fmt,...)    printk("[\er%6s\ew] "fmt,own,##__VA_ARGS__)
 #define log(own,fmt,...)    printk("[\eb%6s\ew] "fmt,own,##__VA_ARGS__)
 
 #ifdef DEBUG
-#define  dbg(own,fmt,...)   printk("[%6s] "fmt,own,##__VA_ARGS__)
+#define  dbg(own,fmt,...)   printk("[\eb%6s\ew] "fmt,own,##__VA_ARGS__)
 #else
 #define dbg(...)
 #endif

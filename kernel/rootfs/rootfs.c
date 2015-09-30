@@ -132,8 +132,8 @@ static void rootfs_init(void){
     hook(FIF_OPEN ,rootfs_open);
     hook(FIF_MKDIR,rootfs_mkdir);
     hook(FIF_RMDIR,rootfs_rmdir);
-    hook(IF_USER15,rootfs_inode);
-    hook(IF_USER14,rootfs_super);
+    hook(IF_USER1,rootfs_inode);
+    hook(IF_USER2,rootfs_super);
 }
 
 int rootfs_main(void )

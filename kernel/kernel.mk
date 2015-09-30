@@ -37,7 +37,6 @@ version.h :
 
 offsets.h : x86-offsets.def object.h task.h
 	$Q cp $< $(out_dir)/offsets.c
-	#$Q echo $(CC) -S $(out_dir)/offsets.c -I./ $(c_flags) -o $(out_dir)/offsets.s
 	$Q $(CC) -S $(out_dir)/offsets.c -I./ $(c_flags) -o $(out_dir)/offsets.s
 	$Q $(offsets)
 
