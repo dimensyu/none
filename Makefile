@@ -36,7 +36,7 @@ libs :
 $(ramdisk) : modules
 	$(Q) echo "Generating ramdisk..."
 	$(Q) mkdir -p $(out_dir)/img
-	$(Q) dd if=/dev/zero of=$(ramdisk) bs=1k count=360
+	$(Q) dd if=/dev/zero of=$(ramdisk) bs=1K count=1024
 	$(Q) mkfs.minix $(ramdisk)
 	$(Q) su -c 'mount $(ramdisk) $(modules_dir)'
 	$(Q) chmod a+w $(modules_dir)

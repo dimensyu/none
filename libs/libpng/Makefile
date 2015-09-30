@@ -4,9 +4,8 @@
 .PHONY:all clean
 
 BUILD		:= LIBRARY
-c_flags	 	:= -I../zlib/ -DPNG_SETJMP_NOT_SUPPORTED \
-	-DPNG_NO_FLOATING_POINT_SUPPORTED -DPNG_NO_WRITE_tIME\
-	-DPNG_NO_STDIO
+module_name	:= png
+c_flags	 	:= -I../zlib
 
 src_files := \
 	png.c \

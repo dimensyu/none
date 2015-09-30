@@ -20,6 +20,14 @@
 #ifndef PNGCONF_H
 #define PNGCONF_H
 
+#if defined(__NONE__)
+#include <stdio.h>
+#define PNG_SETJMP_NOT_SUPPORTED
+#define PNG_NO_FLOATING_POINT_SUPPORTED 
+#define PNG_NO_WRITE_tIME
+#define PNG_NO_STDIO
+#endif
+
 #define PNG_1_2_X
 
 #ifndef PNG_NO_INDEX_SUPPORTED

@@ -281,6 +281,9 @@ png_default_error(png_structp png_ptr, png_const_charp error_message)
       fprintf(stderr, "libpng error: %s", error_message);
       fprintf(stderr, PNG_STRING_NEWLINE);
    }
+#elif defined(__NONE__)
+      printf("libpng error: %s", error_message);
+      printf( PNG_STRING_NEWLINE);
 #endif
 
 #ifdef PNG_SETJMP_SUPPORTED

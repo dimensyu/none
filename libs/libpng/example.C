@@ -1,5 +1,5 @@
 
-#if 0 /* in case someone actually tries to compile this */
+#if 1 /* in case someone actually tries to compile this */
 
 /* example.c - an example of using libpng
  * Last changed in libpng 1.2.37 [June 4, 2009]
