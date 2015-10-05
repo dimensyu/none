@@ -188,6 +188,11 @@ static void moveto(graphics_t *thiz,int x,int y){
     }
 }
 
+static void destory(graphics_t *G __attribute__((unused)))
+{
+
+}
+
 graphics_t *newGraphics(void){
     graphics_t *g;
     g = malloc(sizeof(*g));
@@ -200,6 +205,7 @@ graphics_t *newGraphics(void){
         g->rectangle = rectangle;
         g->text = text;
         g->moveto = moveto;
+        g->destory = destory;
     }
     return g;
 }

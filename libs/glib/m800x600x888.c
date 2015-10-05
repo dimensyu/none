@@ -20,20 +20,27 @@ static void pixel(graphics_t *thiz,int x,int y)
 
 static void enable(void)
 {
-    run(MM_PID,MIF_DMAMAP,0xe0000000,0xe0000000,4096);
     graphics_install_bochs(WIDTH,HEIGHT);
 }
 
-static void clear(void){
+static void disable(void)
+{
+    graphics_uninstall_bochs();
+}
+
+static void clear(void)
+{
     memset(video,0,1 << 24);
 }
 
-graphics_t *newM800x600x888(void){
+graphics_t *newM800x600x888(void)
+{
     graphics_t *g;
     g = newGraphics();
     if(g){
         g->pixel = pixel;
         g->enable = enable;
+        g->disable = disable;
         g->clear = clear;
         g->height = HEIGHT;
         g->width = WIDTH;

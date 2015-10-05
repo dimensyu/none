@@ -18,7 +18,9 @@ struct graphics_t{
     uint16_t height,width;
 
     /* virtual function */
+    void (*destory)(graphics_t *thiz);
     void (*enable)(void);
+    void (*disable)(void);
     void (*clear)(void);
     void (*setcolor)(graphics_t *thiz,color_t color);
     void (*pixel)(graphics_t *thiz,int x,int y);

@@ -2,8 +2,8 @@
 #include <none/if.h>
 #include <string.h>
 
-int write(int fd,void *buffer,int count){
-    int len;
+ssize_t write(int fd,const void *buffer,size_t count){
+    ssize_t len;
     void *buff = _push(buffer,count);
     len = run(fd,IF_WRITE,buff,count,0);
     _pop(buff);

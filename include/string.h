@@ -8,6 +8,7 @@
 #endif
 
 extern char * strerror(int errno);
+extern char *strdup(const char *p);
 
 /*
  * This string-include defines all string functions as inline
@@ -32,6 +33,7 @@ __asm__("cld\n"
     :"ax");
 return dest;
 }
+
 
 static inline char * strncpy(char * dest,const char *src,int count)
 {

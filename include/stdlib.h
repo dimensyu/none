@@ -12,7 +12,7 @@ extern pid_t fork(void);
 extern pid_t fork(void);
 extern int   open(String,int,...);
 extern int   read(int,void*,int);
-extern int   write(int,void*,int);
+extern ssize_t   write(int,const void*,size_t);
 extern int   close(object_t);
 extern void *malloc(size_t size);
 extern void free(void *ptr);

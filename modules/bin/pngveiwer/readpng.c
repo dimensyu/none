@@ -56,6 +56,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "zlib.h"
 #include "png.h"        /* libpng header; includes zlib.h */
 #include "readpng.h"    /* typedefs, common macros, public prototypes */
 
@@ -72,19 +73,23 @@ png_uint_32  width, height;
 int  bit_depth, color_type;
 uch  *image_data = NULL;
 
+static void read_handler(png_structp ptr,png_bytep data,png_size_t length)
+{
+    read((int)(ptr->io_ptr),data,length);
+}
 
 void readpng_version_info(void)
 {
-    fprintf(stderr, "   Compiled with libpng %s; using libpng %s.\n",
+    printf("   Compiled with libpng %s; using libpng %s.\n",
       PNG_LIBPNG_VER_STRING, png_libpng_ver);
-    fprintf(stderr, "   Compiled with zlib %s; using zlib %s.\n",
+    printf("   Compiled with zlib %s; using zlib %s.\n",
       ZLIB_VERSION, zlib_version);
 }
 
 
 /* return value = 0 for success, 1 for bad sig, 2 for bad IHDR, 4 for no mem */
 
-int readpng_init(FILE *infile, ulg *pWidth, ulg *pHeight)
+int readpng_init(int infile, ulg *pWidth, ulg *pHeight)
 {
     uch sig[8];
 
@@ -92,7 +97,7 @@ int readpng_init(FILE *infile, ulg *pWidth, ulg *pHeight)
     /* first do a quick check that the file really is a PNG image; could
      * have used slightly more general png_sig_cmp() function instead */
 
-    fread(sig, 1, 8, infile);
+    read(infile,sig,8);
     if (png_sig_cmp(sig, 0, 8))
         return 1;   /* bad signature */
 
@@ -117,14 +122,19 @@ int readpng_init(FILE *infile, ulg *pWidth, ulg *pHeight)
 
     /* setjmp() must be called in every function that calls a PNG-reading
      * libpng function */
-
+#if !defined(__NONE__)
     if (setjmp(png_jmpbuf(png_ptr))) {
         png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
         return 2;
     }
+#endif
 
 
+#if defined(__NONE__)
+    png_set_read_fn(png_ptr,(png_voidp)infile,read_handler);
+#else
     png_init_io(png_ptr, infile);
+#endif
     png_set_sig_bytes(png_ptr, 8);  /* we already read the 8 signature bytes */
 
     png_read_info(png_ptr, info_ptr);  /* read all PNG info up to image data */
@@ -159,10 +169,12 @@ int readpng_get_bgcolor(uch *red, uch *green, uch *blue)
     /* setjmp() must be called in every function that calls a PNG-reading
      * libpng function */
 
+#if !defined(__NONE__)
     if (setjmp(png_jmpbuf(png_ptr))) {
         png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
         return 2;
     }
+#endif
 
 
     if (!png_get_valid(png_ptr, info_ptr, PNG_INFO_bKGD))
@@ -203,11 +215,11 @@ int readpng_get_bgcolor(uch *red, uch *green, uch *blue)
 
 /* display_exponent == LUT_exponent * CRT_exponent */
 
-#if defined(__NONE__)
-uch *readpng_get_image(int *pChannels, ulg *pRowbytes)
-#else
-uch *readpng_get_image(double display_exponent, int *pChannels, ulg *pRowbytes)
+uch *readpng_get_image(
+#if !defined(__NONE__)
+        double display_exponent, 
 #endif
+        int *pChannels, ulg *pRowbytes)
 {
 #if !defined(__NONE__)
     double  gamma;
@@ -219,10 +231,12 @@ uch *readpng_get_image(double display_exponent, int *pChannels, ulg *pRowbytes)
     /* setjmp() must be called in every function that calls a PNG-reading
      * libpng function */
 
+#if !defined(__NONE__)
     if (setjmp(png_jmpbuf(png_ptr))) {
         png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
         return NULL;
     }
+#endif
 
 
     /* expand palette images to RGB, low-bit-depth grayscale images to 8 bits,
@@ -245,9 +259,10 @@ uch *readpng_get_image(double display_exponent, int *pChannels, ulg *pRowbytes)
     /* unlike the example in the libpng documentation, we have *no* idea where
      * this file may have come from--so if it doesn't have a file gamma, don't
      * do any correction ("do no harm") */
-
+#if !defined(__NONE__)
     if (png_get_gAMA(png_ptr, info_ptr, &gamma))
         png_set_gamma(png_ptr, display_exponent, gamma);
+#endif
 
 
     /* all transformations have been registered; now update info_ptr data,
