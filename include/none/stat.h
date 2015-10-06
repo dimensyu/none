@@ -1,6 +1,8 @@
 #ifndef __NONE_STAT_H__
 #define __NONE_STAT_H__
 
+#include <none/types.h>
+
 #define S_IFMT   0170000
 #define S_IFMNT  0160000
 #define S_IFSOCK 0140000
@@ -38,4 +40,18 @@
 #define S_IWOTH 00002
 #define S_IXOTH 00001
 
+struct stat {
+    object_t st_dev;         /* major/minor device number */
+    unsigned st_ino;         /* i-node number */
+    mode_t st_mode;       /* file mode, protection bits, etc. */
+    short int st_nlink;       /* # links; TEMPORARY HACK: should be nlink_t*/
+    uid_t st_uid;         /* uid of the file's owner */
+    short int st_gid;     /* gid; TEMPORARY HACK: should be gid_t */
+    object_t st_rdev;
+    off_t st_size;        /* file size */
+    time_t st_atime;      /* time of last access */
+    time_t st_mtime;      /* time of last data modification */
+    time_t st_ctime;      /* time of last file status change */
+};
+int stat(const char *pathname, struct stat *buf);
 #endif

@@ -18,7 +18,8 @@
 #define FIF_REMOUNT      IF_REMOUNT
 #define FIF_MKDIR        IF_USER1
 #define FIF_RMDIR        IF_USER2
-#define FIF_DEBUG        IF_USER3
+#define FIF_STAT         IF_USER3
+#define FIF_DEBUG        IF_USER4
 
 
 /* When introducing new O_* bits */

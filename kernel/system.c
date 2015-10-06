@@ -26,7 +26,7 @@ static void system_dup2(object_t caller,long r1,long r2)
         obj->friend[r1] = r2;
         ret(caller,OK);
     }
-    eret(caller,-1,-ENOSYS);
+    ret(caller,-ENOSYS);
 }
 
 static void system_pri(object_t caller,long r1) 

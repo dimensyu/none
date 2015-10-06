@@ -178,12 +178,11 @@ int doint(object_t o,unsigned long fn,unsigned long r1,unsigned long r2,unsigned
     return OK;
 }
 
-int doret(object_t o,long talk,long err)
+int doret(object_t o,long talk)
 {
     Object *obj = toObject(o);
     if(obj && isWaitMe(obj)){
         obj->talk = talk;
-        obj->errno  = err;
         _wakeup(obj);
     }
     return OK;
@@ -213,7 +212,7 @@ _again:
     }
 
     if(NULL == self()->fns[fn]) {
-        doret(id,-1,-ENOSYS);
+        doret(id,-ENOSYS);
         goto _again;
     } else {
         ptr = (long)self()->fns[fn];
@@ -268,8 +267,6 @@ static Task* make_task(id_t id,String name,uintptr_t data,uintptr_t code,int pri
 void god_init(void)
 {
     uintptr_t tr = TR_DESC;
-
-    //sys_log("god task init.\n");
 
     for(int i = 0;i < NR_PRI;i++) rdy_head[i] = rdy_tail[i] = NULL;
     leading = make_task(GOD,"God",KERNEL_DATA,KERNEL_CODE,PRI_GOD,NULL);

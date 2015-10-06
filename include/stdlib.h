@@ -11,7 +11,7 @@ extern pid_t fork(void);
 
 extern pid_t fork(void);
 extern int   open(String,int,...);
-extern int   read(int,void*,int);
+extern ssize_t   read(int,void*,int);
 extern ssize_t   write(int,const void*,size_t);
 extern int   close(object_t);
 extern void *malloc(size_t size);
@@ -29,4 +29,6 @@ extern int   execvp(const char *path,char **argv);
 extern _Noreturn void exit(int status);
 extern long strtol(const char *nptr, char **endptr, int base);
 extern int atoi(const char *str);
+extern int getopt(int argc, char * const argv[], const char *optstring);
+extern int optind;
 #endif

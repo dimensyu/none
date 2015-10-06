@@ -166,7 +166,7 @@ static struct inode *minix_lookup(struct inode *dir, String name,size_t nlen) {
     return inode;
 }
 
-static struct inode *minix_get_dir(struct inode *inode,String pathname) {
+static struct inode *minix_get_dir(struct inode *inode,String pathname,int *error) {
     char c;
     int nlen;
     String thisname;
@@ -176,26 +176,38 @@ static struct inode *minix_get_dir(struct inode *inode,String pathname) {
         pathname++;
     while(1) {
         thisname = pathname;
-        if(!S_ISDIR(inode->i_mode) || !permission(inode,MAY_EXEC))
+        if(!S_ISDIR(inode->i_mode)) {
+            *error = -ENOTDIR;
             return NULL;
+        }
+
+        if(!permission(inode,MAY_EXEC)) {
+            *error = -EPERM;
+            return NULL;
+        }
+
         for(nlen = 0;(c = *pathname++) && c != '/';nlen++);
         if(!c)
             return inode;
         inode = minix_lookup(inode,thisname,nlen);
         fs_dbg("%p = minix_lookup(%p,%s,%d)\n",inode,inode,thisname,nlen);
-        if(!inode)
+        if(!inode) {
+            *error = -ENOENT;
             return NULL;
+        }
     }
 }
 
-static struct inode *minix_dir_namei(struct inode *base,String pathname,int *nlen,String *name) {
+static struct inode *minix_dir_namei(struct inode *base,String pathname,
+        int *nlen,String *name,int *error) {
     char c;
     String basename;
     struct inode *dir;
 
-    dir = minix_get_dir(base,pathname);
-    if(!dir)
+    dir = minix_get_dir(base,pathname,error);
+    if(!dir) {
         return NULL;
+    }
     basename = pathname;
     while((c = *pathname++))
         if(c == '/')
@@ -206,12 +218,12 @@ static struct inode *minix_dir_namei(struct inode *base,String pathname,int *nle
 }
 
 struct inode *minix_namei(struct inode *base,String pathname) {
-    int nlen;
+    int nlen,error;
     String basename;
     struct inode *inode;
     DECAL_SB(base);
 
-    base = minix_dir_namei(base,pathname,&nlen,&basename);
+    base = minix_dir_namei(base,pathname,&nlen,&basename,&error);
     if(!base)
         return NULL;
     if(!nlen)
@@ -232,7 +244,7 @@ int open_namei(struct inode *root,String pathname,int flag,umode_t mode,struct i
         flag |= O_WRONLY;
     mode &= 0777;
     mode |= S_IFREG;
-    dir = minix_dir_namei(root,pathname,&nlen,&basename);
+    dir = minix_dir_namei(root,pathname,&nlen,&basename,&error);
     if(!dir)
         return -ENOENT;
     if(!nlen) {
@@ -276,9 +288,9 @@ int sys_mknod(struct inode *root,String filename,int mode,object_t obj) {
     struct minix_dir_entry *de;
     struct inode *dir,*inode;
 
-    dir = minix_dir_namei(root,filename,&nlen,&basename);
+    dir = minix_dir_namei(root,filename,&nlen,&basename,&error);
     if(!dir)
-        return -ENOENT;
+        return error;
     if(!nlen)
         return -ENOENT;
     if(!permission(dir,MAY_WRITE))
@@ -315,9 +327,10 @@ int minix_mkdir(struct inode *root,String pathname,umode_t mode) {
     struct minix_sb_info *sbi;
     struct minix_inode_info *mi;
 
-    dir = minix_dir_namei(root,pathname,&nlen,&basename);
+    dir = minix_dir_namei(root,pathname,&nlen,&basename,&error);
     if(!dir || !nlen)
-        return -ENOENT;
+        return error;
+
     if(!permission(dir,MAY_WRITE))
         return -EPERM;
 
@@ -415,7 +428,7 @@ static bool minix_emtry_dir(struct inode *inode) {
 }
 
 int minix_rmdir(struct inode *root,String name) {
-    int nlen;
+    int nlen,error;
     void *bb;
     String basename;
     unsigned long zone;
@@ -423,9 +436,9 @@ int minix_rmdir(struct inode *root,String name) {
     struct inode *inode,*dir;
     struct minix_dir_entry *de;
 
-    dir = minix_dir_namei(root,name,&nlen,&basename);
+    dir = minix_dir_namei(root,name,&nlen,&basename,&error);
     if(!dir)
-        return -ENOENT;
+        return error;
     if(!nlen)
         return -ENOENT;
     if(!permission(dir,MAY_WRITE))
@@ -457,15 +470,15 @@ int minix_rmdir(struct inode *root,String name) {
 
 int minix_unlink(struct inode *root,String name) {
     void *bb;
-    int nlen;
+    int nlen,error;
     unsigned long zone;
     String basename;
     struct inode *dir,*inode;
     struct minix_dir_entry *de;
 
-    dir = minix_dir_namei(root,name,&nlen,&basename);
+    dir = minix_dir_namei(root,name,&nlen,&basename,&error);
     if(!dir)
-        return -ENOENT;
+        return error;
     if(!nlen)
         return -ENOENT;
     if(!permission(dir,MAY_WRITE))

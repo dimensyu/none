@@ -10,6 +10,10 @@ object_t open(String path,int flag,...){
     void *buff = _push(path,strlen(path) + 1);
     va_start(arg,flag);
     res = run(ROOTFS_PID,IF_OPEN,buff,flag,0);
+    if(res < 0) {
+        errno = -res;
+        res = -1;
+    }
     _pop(buff);
     return res;
 }

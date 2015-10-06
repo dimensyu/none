@@ -81,7 +81,7 @@ static void clone(object_t o){
     Task *ot = TASK(toObject(o));
     Task *nt = TASK(cloneObject(OBJECT(ot)));
     if(!nt){
-        eret(o,-1,-ENOMEM);
+        ret(o,-ENOMEM);
     }else{
         nt->core = (uintptr_t)clone_space((void *)(ot->core),nt);
         copyvm(OBJECT(ot)->private_data);
@@ -161,7 +161,7 @@ static void np_page(object_t o,void *ptr){
     ret(o,val);
     return;
 err_out:
-    eret(o,-1,val);
+    ret(o,val);
 }
 
 static PageItem *_un_table(PageItem *dir,void *va){
@@ -233,7 +233,7 @@ static void nw_page(object_t o,void *ptr){
     return;
 
 err_out:
-    eret(o,-1,val);
+    ret(o,val);
 }
 
 static void *__va(PageItem *dirs,void *va){

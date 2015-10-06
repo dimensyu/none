@@ -48,7 +48,6 @@ typedef enum {
 #define lock()      cli()
 #define unlock()    sti()
 
-#define eret(caller,talk,err)       syscall(_NR_ret,caller,talk,err,0,0)
 #define ret(caller,talk)            syscall(_NR_ret,caller,talk,0,0,0)
 #define run(callee,fn,r1,r2,r3)     syscall(_NR_run,callee,fn,r1,r2,r3)
 #define run0(callee,fn)             run(callee,fn,0,0,0)

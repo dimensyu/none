@@ -62,17 +62,37 @@ static void rootfs_open(object_t caller,void *pathname,int flag,
     if(res) {
         fs_dbg("%d opoen_namei(%s,%o,%o,%p).\n",
                 res,pathname,flag,mode,&inode);
-        eret(caller,-1,res);
+        ret(caller,res);
     } else {
         ret(caller,normal_open(inode,pathname,flag,mode));
     }
+}
+
+static void rootfs_stat(object_t caller,void *pathname,struct stat *stat_buf)
+{
+    int res;
+    struct inode *inode;
+    res = open_namei(super->s_root,pathname,O_RDONLY,0666,&inode);
+    if(!res && stat_buf) {
+        stat_buf->st_dev = inode->i_rdev;
+        stat_buf->st_gid = inode->i_gid;
+        stat_buf->st_ino = inode->i_ino;
+        stat_buf->st_uid = inode->i_uid;
+        stat_buf->st_mode = inode->i_mode;
+        stat_buf->st_size = inode->i_size;
+        stat_buf->st_atime = inode->i_atime.tv_sec;
+        stat_buf->st_ctime = inode->i_ctime.tv_sec;
+        stat_buf->st_mtime = inode->i_mtime.tv_sec;
+        stat_buf->st_nlink = inode->i_nlinks;
+    }
+    ret(caller,res);
 }
 
 static void rootfs_mkdir(object_t caller,void *buffer,umode_t mode) {
     int res = minix_mkdir(super->s_root,buffer,mode);
     if(res) {
         fs_dbg("%d minix_mkdir(%s,%o).\n",res,buffer,mode);
-        eret(caller,-1,res);
+        ret(caller,res);
     } else
         ret(caller,res);
 }
@@ -81,7 +101,7 @@ static void rootfs_rmdir(object_t caller,void *name) {
     int res = minix_rmdir(super->s_root,name);
     if(res) {
         fs_dbg("%d minix_rmdir(%s).\n",res,name);
-        eret(caller,-1,res);
+        ret(caller,res);
     } else {
         ret(caller,res);
     }
@@ -158,6 +178,7 @@ static void rootfs_init(void){
         panic("Don't read super block.\n");
 
     hook(FIF_OPEN ,rootfs_open);
+    hook(FIF_STAT,rootfs_stat);
     hook(FIF_MKDIR,rootfs_mkdir);
     hook(FIF_RMDIR,rootfs_rmdir);
     hook(FIF_DEBUG,rootfs_debug);
