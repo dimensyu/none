@@ -55,5 +55,5 @@ void graphics_install_bochs(u16 x,u16 y)
     /* Re-enable VBE */
     outw(0x04,0x1ce);
     outw(0x41,0x1cf);
-    run(MM_PID,MIF_DMAMAP,0xE0000000,0xE0000000,0x4096);
+    run(MM_PID,MIF_DMAMAP,0xE0000000,0xE0000000,4096);
 }

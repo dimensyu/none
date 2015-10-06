@@ -46,6 +46,11 @@ static void system_regirq(object_t caller,long irq)
     ret(caller, put_irq_handler(caller,irq));
 }
 
+static void system_getpid(object_t caller)
+{
+    ret(caller,caller);
+}
+
 static void system_irq(object_t caller,long irq)
 {
     err("SYSTEM","Unhandle %d irq.\n",irq);
@@ -57,6 +62,7 @@ static void system_init(void)
     hook(SIF_PRIVATE,system_private);
     hook(SIF_REGIRQ,system_regirq);
     hook(SIF_INTR,system_irq);
+    hook(SIF_GETPID,system_getpid);
     hook(1,system_pri);
 }
 

@@ -338,6 +338,7 @@ int minix_mkdir(struct inode *root,String pathname,umode_t mode) {
     inode->i_mode = S_IFDIR | (mode & 0777);
     mi->i_zone[0] = minix_new_block(inode);
     if(!mi->i_zone[0]) {
+        fs_log("No more free blocks\n");
         minix_free_inode(inode);
         return -ENOSPC;
     }

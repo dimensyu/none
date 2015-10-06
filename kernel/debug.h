@@ -7,7 +7,7 @@
 #define xFS_DBG
 #define xSYS_DBG
 #define xMM_DBG
-#define MP_DBG
+#define xMP_DBG
 #define xPRINT_SCHED
 
 #define err(own,fmt,...)    printk("[\er%6s\ew] "fmt,own,##__VA_ARGS__)

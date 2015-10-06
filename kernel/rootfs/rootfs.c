@@ -90,9 +90,9 @@ static void rootfs_rmdir(object_t caller,void *name) {
 
 static void info_inode(struct inode *inode) {
     fs_log(".......inode info....\n");
-    fs_log("ino    : %d\n",inode->i_ino);
-    fs_log("i_size : %d\n",inode->i_size);
-    fs_log("i_mode : %o\n",inode->i_mode);
+    fs_log("ino    : %u\n",inode->i_ino);
+    fs_log("i_size : %u\n",inode->i_size);
+    fs_log("i_mode : %u\n",inode->i_mode);
 }
 static void info_super(struct super_block *sb) {
     struct minix_sb_info *sbi = sb_info(sb);
@@ -101,24 +101,52 @@ static void info_super(struct super_block *sb) {
             sbi->s_version == MINIX_V1 ? "minix v1" :
             sbi->s_version == MINIX_V2 ? "minix v2" :
             "unkonw");
-    fs_log("device             : %d\n",super->s_dev);
-    fs_log("ninodes            : %d\n",sbi->s_ninodes);
-    fs_log("inode size         : %d\n",sbi->s_inosize);
-    fs_log("dzones             : %d\n",sbi->s_dzones);
-    fs_log("dir size           : %d\n",sbi->s_dirsize);
-    fs_log("name length        : %d\n",sbi->s_namelen);
-    fs_log("imap blocks        : %d\n",sbi->s_imap_blocks);
-    fs_log("zmap blocks        : %d\n",sbi->s_zmap_blocks);
+    fs_log("device             : %u\n",super->s_dev);
+    fs_log("ninodes            : %u\n",sbi->s_ninodes);
+    fs_log("nzones             : %u\n",sbi->s_nzones);
+    fs_log("inode size         : %u\n",sbi->s_inosize);
+    fs_log("dzones             : %u\n",sbi->s_dzones);
+    fs_log("dir size           : %u\n",sbi->s_dirsize);
+    fs_log("name length        : %u\n",sbi->s_namelen);
+    fs_log("imap blocks        : %u\n",sbi->s_imap_blocks);
+    fs_log("zmap blocks        : %u\n",sbi->s_zmap_blocks);
 }
 
-static void rootfs_inode(object_t caller,unsigned long ino) {
-    struct inode *inode = minix_find_inode(super,ino);
-    info_inode(inode);
-    ret(caller,OK);
+static void info_bitmap(struct super_block *sb,unsigned who,unsigned bnr)
+{
+    struct minix_sb_info *sbi = sb_info(sb);
+    bnr *= 0x180;
+    unsigned long blk =    (bnr + 1023) / 1024;
+    unsigned long offset = bnr % 1024;
+    u8 *map = who ? sbi->s_imap[blk] : sbi->s_zmap[blk];
+    map += offset;
+    unsigned i;
+    printk("------------------BIT MAP (%p)-------------------",map);
+    for(i = 0;i < 0x180;i++) {
+        if(!(i % 16))
+            printk("\n%04x : ",i + bnr);
+        printk("%02x ",map[i]);
+    }
 }
 
-static void rootfs_super(object_t caller) {
-    info_super(super);
+static void rootfs_debug(object_t caller,unsigned long cmd,unsigned a1,unsigned a2)
+{
+    switch(cmd) {
+    case 0:
+        info_super(super);
+        break;
+    case 1:
+        {
+            struct inode *inode = minix_find_inode(super,a1);
+            info_inode(inode);
+        }
+        break;
+    case 2:
+        info_bitmap(super,a1,a2);
+        break;
+    default:
+        break;
+    }
     ret(caller,OK);
 }
 
@@ -132,8 +160,7 @@ static void rootfs_init(void){
     hook(FIF_OPEN ,rootfs_open);
     hook(FIF_MKDIR,rootfs_mkdir);
     hook(FIF_RMDIR,rootfs_rmdir);
-    hook(IF_USER1,rootfs_inode);
-    hook(IF_USER2,rootfs_super);
+    hook(FIF_DEBUG,rootfs_debug);
 }
 
 int rootfs_main(void )

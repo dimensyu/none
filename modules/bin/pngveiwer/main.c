@@ -10,6 +10,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
+#include <none/scntl.h>
+#include <posix.h>
+static graphics_t *G;
 
 #define alpha_composite(composite, fg, alpha, bg) {               \
     ush temp = ((ush)(fg)*(ush)(alpha) +                          \
@@ -133,7 +136,6 @@ static void display_png(graphics_t *G,const char *png)
     if(row_pointers == NULL) {
         readpng_cleanup(true);
         close(fd);
-        printf("no data\n");
         return;
     }
 
@@ -149,35 +151,39 @@ static void display_png(graphics_t *G,const char *png)
 
 int main(int argc,char **argv)
 {
-    graphics_t *G;
-    G = newM800x600x888();
-    if(G){
-        //G->enable();
-        if(argc == 2) {
-            MainWindow(G,"Welcome to NONE","Press any key to continue...");
-            display_png(G,argv[1]);
-            getchar();
-        } else {
-            void *dirs = open_dirs("/usr/png");
-            char *png;
-            do {
-                png = next_dir(dirs);
-                if(png) {
-                    MainWindow(G,"Welcome to NONE","Press any key to next image...");
-                    printf("%s\n",png);
-                    display_png(G,png);
-                    printf("%d\n",__LINE__);
-                    getchar();
-                    printf("%d\n",__LINE__);
-                    free(png);
-                }
-            }while(png);
+    id_t id = 0;
+    id = fork();
+    if(0 < id) {
+        execvp("/bin/serial",(char *[]){"serial",NULL});
+    } else if(id == 0) {
+        int fd = open("/dev/ttyS0",O_RDONLY);
+        dup2(1,fd);
+        G = newM800x600x888();
+        if(G){
+            G->enable();
+            MainWindow(G,"Welcome to NONE","Press any key to next image...");
+            if(argc == 2) {
+                display_png(G,argv[1]);
+                getchar();
+            } else {
+                void *dirs = open_dirs("/usr/png");
+                char *png;
+                do {
+                    png = next_dir(dirs);
+                    if(png) {
+                        display_png(G,png);
+                        free(png);
+                        getchar();
+                    }
+                }while(png);
+                close_dirs(dirs);
+            }
+            G->disable();
+            G->destory(G);
+            free(G);
         }
-        G->disable();
-        G->destory(G);
-        free(G);
+        return 0;
     }
-    return 0;
     (void)display_png;
     (void)MainWindow;
 }

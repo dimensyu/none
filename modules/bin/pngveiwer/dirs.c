@@ -52,18 +52,20 @@ char *next_dir(void *_dirs)
             dir = dirs->dir + dirs->offset;
             dirs->offset += 32;
         }while((!strcmp("..",dir->name) || !strcmp(".",dir->name)));
-        nlen = strlen(dirs->dirname) + strlen(dir->name) + 2;
-        name = malloc(nlen);
-        if(name) {
-            memset(name,0,nlen);
-            strcpy(name,dirs->dirname);
-            strcat(name,"/");
-            strncat(name,dir->name,30);
-            if(dirs->offset >= 1024) {
-                dirs->offset = 0;
-                dirs->blk++;
-                if(0 > read(dirs->fd,dirs->dir,dirs->blk * 1024)){
-                    dirs->offset = -1;
+        if(strlen(dir->name)) {
+            nlen = strlen(dirs->dirname) + strlen(dir->name) + 2;
+            name = malloc(nlen);
+            if(name) {
+                memset(name,0,nlen);
+                strcpy(name,dirs->dirname);
+                strcat(name,"/");
+                strncat(name,dir->name,30);
+                if(dirs->offset >= 1024) {
+                    dirs->offset = 0;
+                    dirs->blk++;
+                    if(0 > read(dirs->fd,dirs->dir,dirs->blk * 1024)){
+                        dirs->offset = -1;
+                    }
                 }
             }
         }

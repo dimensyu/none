@@ -4,7 +4,12 @@
 #include <none/types.h>
 #include "buffer.h"
 
+#ifdef  MP_DEBUG
 #define mem_log(fmt,...) log("MP",fmt,##__VA_ARGS__)
+#else
+#define mem_log(fmt,...)
+#endif
+
 #define mem_error mem_log
 
 #define clear_page(p)   \

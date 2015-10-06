@@ -49,6 +49,7 @@
 #include <sys/inter.h>
 #include <posix.h>
 #include <none/scntl.h>
+#include <none/fcntl.h>
 
 #define	QUOTE 0x80 /* 引用标志位，限制了字符集为 7 位 ASCII */
 

@@ -310,7 +310,7 @@ struct super_block *minix_sget(object_t dev,int *error)
     if(*error)
         goto out_bad_sb;
 
-    sbi->s_nzones       = msb->s_ninodes;
+    sbi->s_nzones       = msb->s_nzones;
     sbi->s_ninodes      = msb->s_ninodes;
     sbi->s_max_size     = msb->s_max_size;
     sbi->s_imap_blocks  = msb->s_imap_blocks; 

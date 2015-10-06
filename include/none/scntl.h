@@ -20,6 +20,7 @@
 #define SIF_DUP2    IF_USER2
 #define SIF_PRIVATE IF_USER3
 #define SIF_REGIRQ  IF_USER4
+#define SIF_GETPID  IF_USER5
 #define SIF_INTR    IF_INTR
 #include <sys/inter.h>
 

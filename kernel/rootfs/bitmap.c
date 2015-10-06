@@ -56,7 +56,7 @@ unsigned long minix_new_block(struct inode *inode){
     unsigned int i;
     for(i = 0;i < sbi->s_zmap_blocks;i++) {
         u8 *zb = sbi->s_zmap[i];
-        unsigned int j;
+        unsigned int j = 0;
         lock();
         j = minix_find_first_zero_bit(zb,bits_per_zone);
         if(j < bits_per_zone) {

@@ -1,8 +1,16 @@
-#include "../kernel/kernel.h"
+#include <posix.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <none/if.h>
+#include <none/fcntl.h>
+#include <none/scntl.h>
+#include <sys/inter.h>
+
+#define sr_log(fmt,...) printf("[\ebSerial\ew] "fmt,##__VA_ARGS__)
 
 typedef struct _ioInq{
     object_t caller;
-    cnt_t  count;
+    off_t    count;
     off_t    offset;
     char     *buffer;
     struct _ioInq *next;
@@ -21,12 +29,6 @@ static void sl_init(int port){
     (void)inb(port);
 }
 
-static int rs_handler(object_t o,int irq){
-    (void)irq;
-    doint(o,HARDWARE,0,0,0);
-    return OK;
-}
-
 static void rs_push(IOInq *in){
     if(!inq){
         inq = in;
@@ -42,13 +44,13 @@ static void rs_pop(void){
     if(inq){
         in = inq;
         inq = inq->next;
-        kfree(in);
+        free(in);
     }
 }
 
 
 static void rs_write(object_t caller,void *ptr,cnt_t count){
-    IOInq *in = kalloc(sizeof(IOInq));
+    IOInq *in = malloc(sizeof(IOInq));
     if(in){
         in->caller = caller;
         in->buffer = ptr;
@@ -69,7 +71,7 @@ static void _io(object_t caller){
             switch(status){
             case 0: inb_p(0x3fe); break;
             case 6: inb_p(0x3fd);break;
-            case 4: printk("%c",inb_p(0x3f8));break;
+            case 4: break;
             case 2: 
 again:
                     if(inq){
@@ -90,16 +92,24 @@ again:
     }
 }
 
-static void rs_init(void){
-    sl_init(0x3f8);
-    hook(WRITE,rs_write);
-    hook(HARDWARE,_io);
-    put_irq_handler(4,rs_handler);
-    enable_irq(4);
+static void rs_open(object_t caller)
+{
+    ret(caller,getpid());
 }
 
+static void rs_init(void){
+    int fd;
+    sl_init(0x3f8);
+    hook(IF_WRITE,rs_write);
+    hook(IF_INTR,_io);
+    hook(IF_OPEN,rs_open);
+    regirq(4);
+    fd = open("/dev/ttyS0",O_RDONLY);
+    run(fd,FIF_MOUNT,getpid(),0,0);
+}
 
-int rs_main(void){
+int main(void){
+    sr_log("serial startup...\n");
     rs_init();
     workloop();
     return 0;
