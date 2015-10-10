@@ -23,7 +23,7 @@
 #define KERNEL_DIR      0x200000
 #define KERNEL_TABLE    0x201000 /* 0x201000 ~ 0x301000 内核映射页表 256项,共占1MB内存 */
 #define RAMDISK_ADDR    0x400000 /* ramdisk 起始地址 */
-#define RAMDISK_END     0x500000 /* ramdisk 结束地址 */
+#define RAMDISK_END     0x800000 /* ramdisk 结束地址 */
 #define RAMDISK_COUNT   (RAMDISK_END - RAMDISK_ADDR)
 #define OBJECT_START    0x800000 /*! 对象内存页分配开始地址 !*/
 #define CONST_MEM       0xb00000 /*! 对象页分配结束地址,通用内存页开始地址内 !*/
