@@ -37,6 +37,9 @@ $(ramdisk) : modules
 	$(Q) echo "Generating ramdisk..."
 	$(Q) mkdir -p $(out_dir)/img
 	$(Q) mkdir -p $(out_dir)/ramdisk
+	$(Q) mkdir -p $(out_dir)/ramdisk/dev/
+	$(Q) mkdir -p $(out_dir)/ramdisk/usr/
+	$(Q) mkdir -p $(out_dir)/ramdisk/usr/png
 	$(Q) -rm -f $(out_dir)/radisk/bin/*
 	$(Q) cp $(out_dir)/bin/ $(out_dir)/ramdisk/ -r
 	$(Q) -rm -f -- $(modules_dir)/bin/none

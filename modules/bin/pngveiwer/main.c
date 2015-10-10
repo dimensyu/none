@@ -151,39 +151,31 @@ static void display_png(graphics_t *G,const char *png)
 
 int main(int argc,char **argv)
 {
-    id_t id = 0;
-    id = fork();
-    if(0 < id) {
-        execvp("/bin/serial",(char *[]){"serial",NULL});
-    } else if(id == 0) {
-        int fd = open("/dev/ttyS0",O_RDONLY);
-        dup2(1,fd);
-        G = newM800x600x888();
-        if(G){
-            G->enable();
-            MainWindow(G,"Welcome to NONE","Press any key to next image...");
-            if(argc == 2) {
-                display_png(G,argv[1]);
-                getchar();
-            } else {
-                void *dirs = open_dirs("/usr/png");
-                char *png;
-                do {
-                    png = next_dir(dirs);
-                    if(png) {
-                        display_png(G,png);
-                        free(png);
-                        getchar();
-                    }
-                }while(png);
-                close_dirs(dirs);
-            }
-            G->disable();
-            G->destory(G);
-            free(G);
+    G = newM800x600x888();
+    if(G){
+        G->enable();
+        MainWindow(G,"Welcome to NONE","Press any key to next image...");
+        if(argc == 2) {
+            display_png(G,argv[1]);
+            getchar();
+        } else {
+            void *dirs = open_dirs("/usr/png");
+            char *png;
+            do {
+                png = next_dir(dirs);
+                if(png) {
+                    display_png(G,png);
+                    free(png);
+                    getchar();
+                }
+            }while(png);
+            close_dirs(dirs);
         }
-        return 0;
+        G->disable();
+        G->destory(G);
+        free(G);
     }
+    return 0;
     (void)display_png;
     (void)MainWindow;
 }

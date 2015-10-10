@@ -23,7 +23,7 @@ git clone https://github.com/LuoZhongYao/none.git
 ```
 
 <h3 id='run'>运行</h3>
-`img/c.img` `img/ramdisk.img`是已经编译好的的启动镜像(虚拟AT硬盘)和ramdisk镜像,直接可以在bochs下运行.安装好bochs后使用如下命令即可运行
+`out/img/none.iso`,`out/img/ramdisk.img`是已经编译好的的启动镜像(可启动光盘镜像)和ramdisk镜像,直接可以在bochs下运行.安装好bochs后使用如下命令即可运行
 ```bash
 bochs
 ```
@@ -34,15 +34,11 @@ git clone https://github.com/LuoZhongYao/none.git # 下载源码
 cd none                 # 进入none源码目录
 source tools/setenv.sh  # 设置root_dir环境变量
 make                    # 编译生成out/bin/none,及modules/目录下的演示,测试程序,模块,生成的二进制文件在out/bin/目录下
-sudo make go            # 将out/bin/non拷贝到img/a.img的/目录下,将out/bin/下面的程序,拷贝到img/ramdisk.img的/bin/目录下,并启动bochs运行
+make iso                # 将out/bin/non拷贝到out/cdrom/目录下,将out/bin/下面的程序,拷贝到out/img/ramdisk.img的/bin/目录下,并生成iso镜像,需要输入两次root密码
 ```
-<h3 id="bochs">虚拟机</h3>
-
-[none][]因为使用了AT硬盘,而这种硬盘已经绝种了,而只有`bochs`的虚拟硬盘是*FAST模式*,可以直接挂载Linux下进行操作,十分简单,所以理想的运行环境是`bochs`.
-bochs需要特殊编译.可参考本人的另一篇文章[编译支持VESA3的bochs](http://www.cnblogs.com/-lzy/p/3486142.html)
 <h3 id="pc">物理机</h3>
 
-如果安装的是linux系统,运行[none][]很简单.将out/bin/none和img/ramdisk.img拷贝到/boot/目录下,如果是grub 2.0,编辑/boot/grub2/grub.cfg,在末尾加入
+如果安装的是linux系统,运行[none][]很简单.将out/bin/none和out/img/ramdisk.img拷贝到/boot/目录下,如果是grub 2.0,编辑/boot/grub2/grub.cfg,在末尾加入
 
 ```bash
 menuentry 'none OS' {
