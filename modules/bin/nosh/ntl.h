@@ -14,7 +14,7 @@ extern FILE *stdout;
 static inline object_t fileno(FILE *file){return *file;}
 static inline int fwrite(void *buffer,size_t cnt,size_t size,FILE *file) {return write(*file,buffer,cnt * size);}
 int system(char *);
-#define isatty(x) x
+extern int isatty(int fd);
 #define EOF -1
 #define YY_INPUT(buf,result,max_size) result = read(fileno(stdin),buf,max_size)
 #define fprintf(f,...) printf(__VA_ARGS__)

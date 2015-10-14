@@ -2,6 +2,11 @@
 #define __NONE_TYPES_H__
 #include <stdint.h>
 
+#if  __GNUC__ > 4 || ___GNUC__ == 4 && __GNUC_MINOR__ >= 9
+#else
+#define _Atomic
+#endif
+
 typedef long mode_t;
 typedef long ssize_t; 
 typedef long id_t;

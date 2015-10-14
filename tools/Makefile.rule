@@ -14,6 +14,8 @@ else
 	Q := @
 endif
 
+SHELL	:= /bin/bash
+
 .PHONY: clean all
 ##########################################################################
 #	目录定义
@@ -40,17 +42,17 @@ $(shell mkdir -p  $(lib_dir)/ $(out_dir)/ $(bin_dir)/)
 
 define sub-dir
 	$Q \
-		files=`find ./ -mindepth 2 -maxdepth 2 -name 'Makefile'`;\
+		files=$$(find ./ -mindepth 2 -maxdepth 2 -name 'Makefile');\
 		for f in $$files;do\
 			grep '^BUILD\s*:=\s*LIBRARY\s*$$' $$f > /dev/null;\
 			if [ $$? -eq 0 ] ;then\
-				dir=`dirname $$f`;\
+				dir=$$(dirname $$f);\
 				$(MAKE)  -s -C $$dir V=$V $(1) || exit 1;\
 				files=$${files//$$f/};\
 			fi;\
 		done;\
 		for f in $$files;do \
-			dir=`dirname $$f`;\
+			dir=$$(dirname $$f);\
 			$(MAKE) -s -C $$dir V=$V $(1) || exit 1;\
 		done;
 endef
@@ -70,7 +72,7 @@ LD	:= ld
 a_flags  += --32
 c_flags  += $(addprefix -I,$(include_dir)) -m32 -std=c11 -fno-builtin\
 		   	-nostdinc -Wall -Werror -D__NONE__\
-			#-fno-stack-protector 
+			-fno-stack-protector 
 
 ########################################################################
 #	中间文件生成

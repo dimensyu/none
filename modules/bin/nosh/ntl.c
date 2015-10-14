@@ -65,3 +65,8 @@ int atoi(const char *string) {
     }
     return number;
 }
+
+int isatty(int fd)
+{
+    return 1;
+}
