@@ -51,9 +51,9 @@ static void system_getpid(object_t caller)
     ret(caller,caller);
 }
 
-static void system_irq(object_t caller,long irq)
+static void system_irq(object_t caller __unused,long irq)
 {
-    err("SYSTEM","Unhandle %d irq.\n",irq);
+    LOG(LOG_ERR,"system","Unhandle %d irq.\n",irq);
 }
 
 static void system_init(void)
@@ -92,7 +92,7 @@ hel:
         if(i < ARRAY_SIZE(tasks))
             goto hel;
     } else {
-        printk("Can't fork process %s.\n",tasks[i].name);
+        LOG(LOG_ERR,"system","Can't fork process %s.\n",tasks[i].name);
         goto hel;
     }
     system_shell();

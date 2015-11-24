@@ -5,7 +5,7 @@
 static struct super_block *super;
 
 object_t mount_open(struct inode *inode,String name,umode_t mode) {
-    fs_dbg("mount open(%d).\n",inode->i_rdev);
+    LOGD("mount open(%d).\n",inode->i_rdev);
     return run2(inode->i_rdev,IF_OPEN,name,mode);
 }
 
@@ -20,14 +20,14 @@ static void minix_close(object_t caller) {
     }
 }
 
-static void minix_open(object_t caller,String unused(name),umode_t unused(mode)) {
+static void minix_open(object_t caller,String name __unused,umode_t mode __unused) {
     struct file *file = self()->private_data;
-    fs_dbg("double open(%s).\n",name);
+    LOGD("double open(%s).\n",name);
     file->cnt++;
     ret(caller,self()->id);
 }
 
-object_t normal_open(struct inode *inode,String name,int flag,umode_t unused(mode)) {
+object_t normal_open(struct inode *inode,String name,int flag,umode_t mode __unused) {
     if(inode) {
         object_t id = fork();
         if(0 == id) {
@@ -60,7 +60,7 @@ static void rootfs_open(object_t caller,void *pathname,int flag,
     struct inode *inode;
     res = open_namei(super->s_root,pathname,flag,mode,&inode);
     if(res) {
-        fs_dbg("%d opoen_namei(%s,%o,%o,%p).\n",
+        LOGD("%d opoen_namei(%s,%o,%o,%p).\n",
                 res,pathname,flag,mode,&inode);
         ret(caller,res);
     } else {
@@ -91,7 +91,7 @@ static void rootfs_stat(object_t caller,void *pathname,struct stat *stat_buf)
 static void rootfs_mkdir(object_t caller,void *buffer,umode_t mode) {
     int res = minix_mkdir(super->s_root,buffer,mode);
     if(res) {
-        fs_dbg("%d minix_mkdir(%s,%o).\n",res,buffer,mode);
+        LOGD("%d minix_mkdir(%s,%o).\n",res,buffer,mode);
         ret(caller,res);
     } else
         ret(caller,res);
@@ -100,7 +100,7 @@ static void rootfs_mkdir(object_t caller,void *buffer,umode_t mode) {
 static void rootfs_rmdir(object_t caller,void *name) {
     int res = minix_rmdir(super->s_root,name);
     if(res) {
-        fs_dbg("%d minix_rmdir(%s).\n",res,name);
+        LOGD("%d minix_rmdir(%s).\n",res,name);
         ret(caller,res);
     } else {
         ret(caller,res);
@@ -109,27 +109,27 @@ static void rootfs_rmdir(object_t caller,void *name) {
 
 
 static void info_inode(struct inode *inode) {
-    fs_log(".......inode info....\n");
-    fs_log("ino    : %u\n",inode->i_ino);
-    fs_log("i_size : %u\n",inode->i_size);
-    fs_log("i_mode : %u\n",inode->i_mode);
+    LOGI(".......inode info....\n");
+    LOGI("ino    : %u\n",inode->i_ino);
+    LOGI("i_size : %u\n",inode->i_size);
+    LOGI("i_mode : %u\n",inode->i_mode);
 }
 static void info_super(struct super_block *sb) {
     struct minix_sb_info *sbi = sb_info(sb);
-    fs_log("..............super block...............\n");
-    fs_log("version            : %s\n",
+    LOGI("..............super block...............\n");
+    LOGI("version            : %s\n",
             sbi->s_version == MINIX_V1 ? "minix v1" :
             sbi->s_version == MINIX_V2 ? "minix v2" :
             "unkonw");
-    fs_log("device             : %u\n",super->s_dev);
-    fs_log("ninodes            : %u\n",sbi->s_ninodes);
-    fs_log("nzones             : %u\n",sbi->s_nzones);
-    fs_log("inode size         : %u\n",sbi->s_inosize);
-    fs_log("dzones             : %u\n",sbi->s_dzones);
-    fs_log("dir size           : %u\n",sbi->s_dirsize);
-    fs_log("name length        : %u\n",sbi->s_namelen);
-    fs_log("imap blocks        : %u\n",sbi->s_imap_blocks);
-    fs_log("zmap blocks        : %u\n",sbi->s_zmap_blocks);
+    LOGI("device             : %u\n",super->s_dev);
+    LOGI("ninodes            : %u\n",sbi->s_ninodes);
+    LOGI("nzones             : %u\n",sbi->s_nzones);
+    LOGI("inode size         : %u\n",sbi->s_inosize);
+    LOGI("dzones             : %u\n",sbi->s_dzones);
+    LOGI("dir size           : %u\n",sbi->s_dirsize);
+    LOGI("name length        : %u\n",sbi->s_namelen);
+    LOGI("imap blocks        : %u\n",sbi->s_imap_blocks);
+    LOGI("zmap blocks        : %u\n",sbi->s_zmap_blocks);
 }
 
 static void info_bitmap(struct super_block *sb,unsigned who,unsigned bnr)
@@ -172,7 +172,7 @@ static void rootfs_debug(object_t caller,unsigned long cmd,unsigned a1,unsigned 
 
 static void rootfs_init(void){
     int error;
-    fs_log("Startup...\n");
+    LOGI("Startup...\n");
     super = minix_sget(RAMDISK_PID,&error);
     if(super == NULL) 
         panic("Don't read super block.\n");
@@ -187,7 +187,7 @@ static void rootfs_init(void){
 int rootfs_main(void )
 {
     rootfs_init();
-    fs_log("Workloop\n");
+    LOGI("Workloop\n");
     workloop();
     return 0;
 }

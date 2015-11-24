@@ -22,20 +22,20 @@ void minix_free_block(struct inode *inode,unsigned long block) {
     unsigned long bit,zone;
 
     if(block < sbi->s_firstdatazone || block >= sbi->s_nzones) {
-        mfs_err("Trying to free block not in datazone.\n");
+        LOGE("Trying to free block not in datazone.\n");
         return ;
     }
     zone = block - sbi->s_firstdatazone + 1;
     bit = zone & ((1 << k) - 1);
     zone >>= k;
     if(zone >= sbi->s_zmap_blocks) {
-        mfs_err("nonexistent bitmap buffer.\n");
+        LOGE("nonexistent bitmap buffer.\n");
         return ;
     }
     ib = sbi->s_zmap[zone];
     lock();
     if(!minix_test_and_clear_bit(bit,ib))
-        mfs_err("(%d): bit already cleared.\n",block);
+        LOGE("(%d): bit already cleared.\n",block);
     unlock();
     sb_bwrite(sb,ib,ZMAP_OFFSET(sbi,zone));
 }
@@ -97,20 +97,20 @@ void minix_free_inode(struct inode *inode) {
 
     inr = inode->i_ino;
     if(inr < 1 || inr > sbi->s_ninodes) {
-        mfs_err("inode 0 or nonexistent inode.\n");
+        LOGE("inode 0 or nonexistent inode.\n");
         return;
     }
     bit = inr & ((1 << k) - 1);
     inr >>= k;
     if(inr >= sbi->s_imap_blocks) {
-        mfs_err("nonexistenet imap in superblock.\n");
+        LOGE("nonexistenet imap in superblock.\n");
         return;
     }
     minix_clear_inode(inode);
     ib = sbi->s_imap[inr];
     lock();
     if(!minix_test_and_clear_bit(bit,ib))
-            mfs_err("bit %lu already cleared.\n",bit);
+            LOGE("bit %lu already cleared.\n",bit);
     unlock();
     sb_bwrite(sb,ib,IMAP_OFFSET(inr));
 }
@@ -146,7 +146,7 @@ struct inode *minix_new_inode(struct inode *dir,mode_t mode,int *error) {
     }
     if (minix_test_and_set_bit(j,ib)) {
         unlock();
-        mfs_err("bit already set.\n");
+        LOGE("bit already set.\n");
         return NULL;
     }
     unlock();

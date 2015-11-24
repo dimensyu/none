@@ -2,18 +2,13 @@
 #define __Z_H__
 
 /*! Now, we open a new programming !*/
-#ifndef _UNUSED
-#define _UNUSED(x)   ((void)x)
+
+#ifndef __unused
+#define __unused __attribute__((__unused__))
 #endif
 
-#if defined(__GNUC__)
-#define unused(v) v  __attribute__((unused))
-#else
-#define unused(v) v
-#endif
-
-#ifndef eprint
-#define eprint(...)
+#ifndef LOGE
+#define LOGE(...)
 #endif
 
 #define choose_expr __builtin_choose_expr
@@ -34,23 +29,13 @@
 
 #define var __auto_type
 /*! ~~~~~~~~~~~~~~~~~~~~~~~ excoption ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ !*/
-#if  __GNUC__ > 4 || __GNUC__ == 4 && __GNUC_MINOR__ >= 9  /*! only ycm !*/
-#define foreach(index,start,end) for(var index = start;index < end;index++)
-#define try(expr,code,...) ({\
-        var _v = code;\
-        if(_test(expr _v)){\
-            eprint("Exception : " #code);\
-            __VA_ARGS__;\
-        }_v;})
-#else
 #define foreach(index,start,end) for(__typeof__(end) index = start;index < end;index++)
 #define try(expr,code,...) ({\
         __typeof__(code) _v = code;\
         if(_test(expr _v)){\
-            eprint("Exception : " #code"\n");\
+            LOGE(#code " %s:%d\n",__FILE__,__LINE__);\
             __VA_ARGS__;\
         }_v;})
-#endif
 
 #define throw    goto
 
@@ -58,11 +43,11 @@
 
 
 /*! ~~~~~~~~~~~~~~~~~~~~  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ !*/
-#define PP_NARG(...) \
-    PP_NARG_(__VA_ARGS__,PP_RSEQ_N())
+#define NR_N(n) _NR_N(n)
+#define _NR_N(n) n ## 9,n ## 8,n ## 7,n ## 6,n ## 5,n ## 4,n ## 3,n ## 2,n ## 1,n ## 0
+#define PP_RSEQ_N() \
+    NR_N(6), NR_N(5), NR_N(4), NR_N(3), NR_N(2), NR_N(1), NR_N(),
 
-#define PP_NARG_(...) \
-    PP_ARG_N(__VA_ARGS__)
 
 #define PP_ARG_N( \
          _1, _2, _3, _4, _5, _6, _7, _8, _9,_10, \
@@ -71,12 +56,10 @@
         _31,_32,_33,_34,_35,_36,_37,_38,_39,_40, \
         _41,_42,_43,_44,_45,_46,_47,_48,_49,_50, \
         _51,_52,_53,_54,_55,_56,_57,_58,_59,_60, \
-        _61,_62,_63,_64,_65,_66,_67,_68,_69,N,...) N
+        _61,_62,_63,_64,_65,_66,_67,_68,_69,_70,N,...) N
 
-#define _NR_N(n) n ## 9,n ## 8,n ## 7,n ## 6,n ## 5,n ## 4,n ## 3,n ## 2,n ## 1,n ## 0
-#define NR_N(n) _NR_N(n)
-#define PP_RSEQ_N() \
-    NR_N(6), NR_N(5), NR_N(4), NR_N(3), NR_N(2), NR_N(1), NR_N(),
+#define PP_NARG_(...) PP_ARG_N(__VA_ARGS__)
+#define PP_NARG(...)  PP_NARG_(,__VA_ARGS__,PP_RSEQ_N())
 
 
 #define TOKEN(x,y)  _TOKEN(x,y)
@@ -109,6 +92,6 @@
 #define APPLY(fn,link,...)        TOKEN(APPLY,PP_NARG(__VA_ARGS__))(fn,link,__VA_ARGS__)
 #define _CATCH(x)    x:
 #define catch(...)  APPLY(_CATCH,,__VA_ARGS__)
-#define UNUSED(...) APPLY(_UNUSED,;,__VA_ARGS__)
+#define unused(...) APPLY(__unused,;,__VA_ARGS__)
 
 #endif

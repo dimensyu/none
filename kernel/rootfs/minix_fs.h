@@ -2,24 +2,27 @@
 #define __MINIX_FS_H__
 #include <fs/fs.h>
 #include "minix.h"
-#include "../kernel.h"
 #include <none/stat.h>
 #include <stddef.h>
 #include <x86/bitops.h>
 #include <stdbool.h>
 
-#ifdef FS_DBG
-#define fs_dbg(fmt,...) dbg("ROOTFS",fmt,##__VA_ARGS__)
-#else
-#define fs_dbg(...)
-#endif
-#define fs_log(fmt,...) log("ROOTFS",fmt,##__VA_ARGS__)
+#define LOGE(fmt,...) LOG(LOG_ERR,"rootfs",fmt,##__VA_ARGS__)
+#include "../kernel.h"
 
-#define mfs_err(fmt,...) err("ROOTFS",fmt,##__VA_ARGS__)
+#ifdef FS_DEBUG
+    #define LOGD(fmt,...) DBG("rootfs",fmt,##__VA_ARGS__)
+#else
+    #define LOGD(...)
+#endif
+
+#define LOGT(fmt,...) LOG(LOG_TODO,"rootfs",fmt" %s:%d",##__VA_ARGS__,__FILE__,__LINE__)
+#define LOGI(fmt,...) LOG(LOG_INFO,"rootfs",fmt,##__VA_ARGS__)
 #define pname(name,nlen) ({\
         for(int i = 0;i < nlen && name[i];i ++)\
         printk("%c",name[i]);\
         })
+
 
 #define minix_set_bit(nr,addr) \
     __set_bit((nr),(unsigned long*)(addr))

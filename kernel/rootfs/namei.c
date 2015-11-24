@@ -1,5 +1,4 @@
 #include "minix_fs.h"
-#include <z.h>
 
 #define MAY_EXEC    1
 #define MAY_WRITE   2
@@ -19,13 +18,13 @@ static inline void *minix_next_entry(void *de,struct minix_sb_info *sbi) {
 static bool permission(struct inode *inode,umode_t mask) {
     umode_t mode = inode->i_mode;
 
- //   fs_dbg("permission inode->i_rdev(%d),mi->i_nlinks(%d).\n",
+  //   LOGD("permission inode->i_rdev(%d),mi->i_nlinks(%d).\n",
   //          inode->i_rdev,mi->i_nlinks);
     if(inode->i_rdev && !inode->i_nlinks)
         return false;
 
     mode >>= 6;
-  //  fs_dbg("permission (mode & mask & 0007) => (%o %o %d).\n",
+  //  LOGD("permission (mode & mask & 0007) => (%o %o %d).\n",
    //         mode,mask,mode & mask & 0007);
     if((mode & mask & 0007) == mask)
         return true;
@@ -48,7 +47,7 @@ static void *minix_find_entry(struct inode *dir,String name,int nlen,struct mini
 
     /* check for '..',as we might have to do some 'magic' fot it */
     if(nlen == 2 && name[0] == '.' && name[1] == '.') {
-        todo("unhandler '..'.\n");
+        LOGT("unhandler '..'.\n");
         goto out_err;
     }
 
@@ -66,7 +65,7 @@ static void *minix_find_entry(struct inode *dir,String name,int nlen,struct mini
             de = bb;
         }
 #if 0
-        fs_dbg("match (");
+        LOGD("match (");
         pname(name,nlen);
         printk(",");
         pname(de->name,sbi->s_namelen);
@@ -121,13 +120,13 @@ static int minix_add_entry (struct inode *dir,String name,int nlen,unsigned long
             de = bb;
         }
         if(i * sbi->s_dirsize >= dir->i_size) {
-            fs_dbg("(s_dirsize,dir->i_size) = >(%p,%d,%d).\n",dir,i * sbi->s_dirsize,dir->i_size);
+            LOGD("(s_dirsize,dir->i_size) = >(%p,%d,%d).\n",dir,i * sbi->s_dirsize,dir->i_size);
             de->inode = 0;
             dir->i_size = (i + 1) *sbi->s_dirsize;
             dir->i_ctime.tv_sec = time(NULL);
             minix_sync_inode(dir);
         }
-        fs_dbg("add entry (%s,%d) => inode(%d,%s).\n",name,nlen,de->inode,de->name);
+        LOGD("add entry (%s,%d) => inode(%d,%s).\n",name,nlen,de->inode,de->name);
 
         if(!de->inode) {
             de->inode = ino;
@@ -135,7 +134,7 @@ static int minix_add_entry (struct inode *dir,String name,int nlen,unsigned long
             memset(de->name + nlen,0,sbi->s_namelen - nlen);
             dir->i_mtime.tv_sec = time(NULL);
             sb_bwrite(sb,bb,block);
-            fs_dbg("de %s %d dir(%d).\n",de->name,de->inode,dir->i_size);
+            LOGD("de %s %d dir(%d).\n",de->name,de->inode,dir->i_size);
             kfree(bb);
             return 0;
         }
@@ -159,10 +158,10 @@ static struct inode *minix_lookup(struct inode *dir, String name,size_t nlen) {
         return NULL;
     ino = de->inode;
     kfree(bb);
-    fs_dbg("%p = minix_find_entry(%p,%s,%d,&de).\n",bb,dir,name,ino);
+    LOGD("%p = minix_find_entry(%p,%s,%d,&de).\n",bb,dir,name,ino);
     if(de->inode)
         inode = minix_find_inode(sb,ino);
-    fs_dbg("%p = minix_find_inode(sb,%d).\n",inode,ino);
+    LOGD("%p = minix_find_inode(sb,%d).\n",inode,ino);
     return inode;
 }
 
@@ -190,7 +189,7 @@ static struct inode *minix_get_dir(struct inode *inode,String pathname,int *erro
         if(!c)
             return inode;
         inode = minix_lookup(inode,thisname,nlen);
-        fs_dbg("%p = minix_lookup(%p,%s,%d)\n",inode,inode,thisname,nlen);
+        LOGD("%p = minix_lookup(%p,%s,%d)\n",inode,inode,thisname,nlen);
         if(!inode) {
             *error = -ENOENT;
             return NULL;
@@ -351,7 +350,7 @@ int minix_mkdir(struct inode *root,String pathname,umode_t mode) {
     inode->i_mode = S_IFDIR | (mode & 0777);
     mi->i_zone[0] = minix_new_block(inode);
     if(!mi->i_zone[0]) {
-        fs_log("No more free blocks\n");
+        LOGI("No more free blocks\n");
         minix_free_inode(inode);
         return -ENOSPC;
     }
@@ -391,7 +390,7 @@ static bool minix_emtry_dir(struct inode *inode) {
         return false;
     if(len < 2 || !mi->i_zone[0] ||
             (inode_bread(inode,bb,0))) {
-        mfs_err("warning - bad directory on dev %d.\n",inode->i_rdev);
+        LOGE("warning - bad directory on dev %d.\n",inode->i_rdev);
         return false;
     }
     de = bb;
@@ -459,7 +458,7 @@ int minix_rmdir(struct inode *root,String name) {
     if(!minix_emtry_dir(inode))
         return -ENOTEMPTY;
     if(inode->i_nlinks != 2)
-        mfs_err("emptry directory has nlinks != 2(%d).\n",inode->i_nlinks);
+        LOGE("emptry directory has nlinks != 2(%d).\n",inode->i_nlinks);
     minix_free_inode(inode);
     de->inode = 0;
     dir->i_ctime.tv_sec = dir->i_mtime.tv_sec = time(NULL);
@@ -502,7 +501,7 @@ int minix_unlink(struct inode *root,String name) {
     }
     inode = inode_info(inode);
     if(!inode->i_nlinks) {
-        mfs_err("Deleting nonexistent file (%04x:%d),%d.\n",
+        LOGE("Deleting nonexistent file (%04x:%d),%d.\n",
                 inode->i_rdev,inode->i_ino,inode->i_nlinks);
         inode->i_nlinks = 1;
     }

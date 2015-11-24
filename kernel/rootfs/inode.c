@@ -107,12 +107,12 @@ static struct inode *minix_special_inode(struct super_block *sb,
     struct minix_inode_info *minix_inode;
     struct minix_sb_info *sbi;
     if(!sb || !raw_inode || !ino){
-        fs_dbg("sb(%p),raw_inode(%p),ino(%d).\n",sb,raw_inode,ino);
+        LOGD("sb(%p),raw_inode(%p),ino(%d).\n",sb,raw_inode,ino);
         return NULL;
     }
     inode = kalloc(sizeof(*inode) + sizeof(struct minix_inode_info));
     if(!inode) {
-        fs_dbg("memory out.\n");
+        LOGD("memory out.\n");
         return NULL;
     }
     minix_inode = inode_info(inode);
@@ -151,7 +151,7 @@ static struct inode *minix_special_inode(struct super_block *sb,
         minix_inode->double_indir_zone = v2->double_indir_zone;
         minix_inode->triple_indir_zone = v2->triple_indir_zone;
     } else {
-        mfs_err("only suport minix fs V1 | V2.\n");
+        LOGE("only suport minix fs V1 | V2.\n");
         kfree(inode);
         return NULL;
     }
@@ -194,14 +194,14 @@ void minix_sync_inode(struct inode *inode) {
         v2->indir_zone = mi->indir_zone;
         v2->double_indir_zone = mi->double_indir_zone;
         v2->triple_indir_zone = mi->triple_indir_zone;
-        fs_dbg("v2(mode : %o,size : %d).\n",v2->i_mode,v2->i_size);
+        LOGD("v2(mode : %o,size : %d).\n",v2->i_mode,v2->i_size);
     } else {
-        mfs_err("only suport minix filesystem v1 | v2.\n");
+        LOGE("only suport minix filesystem v1 | v2.\n");
         return;
     }
     blk = mi->i_rawdata - 
         in * sbi->s_inosize;
-    fs_dbg("blk offset (%p,%d).\n",blk,I_OFFSET(sbi,bn));
+    LOGD("blk offset (%p,%d).\n",blk,I_OFFSET(sbi,bn));
     sb_bwrite(sb,blk,I_OFFSET(sbi,bn));
 }
 
@@ -216,13 +216,13 @@ static struct inode *minix_iget(struct super_block *sb,
     u8  *ib;
 
     if(!ino || ino > sbi->s_ninodes) {
-        mfs_err("Bad inode number on %s : %ld is out of range.\n",
+        LOGE("Bad inode number on %s : %ld is out of range.\n",
                 sb->s_id,ino);
         return NULL;
     }
     ib = kalloc(BLOCK_SIZE);
     if(!ib) {
-        mfs_err("memory out.\n");
+        LOGE("memory out.\n");
         return NULL;
     }
     ino--;
@@ -232,12 +232,12 @@ static struct inode *minix_iget(struct super_block *sb,
     block = 2 + sbi->s_imap_blocks + sbi->s_zmap_blocks + bn;
     ret = sb_bread(sb,ib,block);
     if(ret) {
-        mfs_err("unable to read inode block.\n");
+        LOGE("unable to read inode block.\n");
         goto out_bad_inode;
     }
     inode = minix_special_inode(sb,ib + sbi->s_inosize * in,ino + 1);
     if(!inode){
-        mfs_err("unable to sepcail inode.\n");
+        LOGE("unable to sepcail inode.\n");
         goto out_bad_inode;
     }
 
@@ -375,11 +375,11 @@ struct super_block *minix_sget(object_t dev,int *error)
     return sb;
 
 out_bad_rootino:
-    mfs_err("Can't find root inode.\n");
+    LOGE("Can't find root inode.\n");
     goto out_free_bitmap;
 
 out_no_bitmap:
-    mfs_err("bad superblock or unable to read bitmaps.\n");
+    LOGE("bad superblock or unable to read bitmaps.\n");
 out_free_bitmap:
     for(i = 0;i < sbi->s_imap_blocks + sbi->s_zmap_blocks;i++)
         if(map[i])
@@ -388,23 +388,23 @@ out_free_bitmap:
     goto out_free_sb_msb;
 
 out_no_map:
-    mfs_err("can't allocate map.\n");
+    LOGE("can't allocate map.\n");
     goto out_free_sb_msb;
 
 out_illegal_sb:
-    mfs_err("bad superblock.\n");
+    LOGE("bad superblock.\n");
     goto out_free_sb_msb;
 
 out_no_fs:
-    mfs_err("unsuport super block magic %x.\n",msb->s_magic);
+    LOGE("unsuport super block magic %x.\n",msb->s_magic);
     goto out_free_sb_msb;
 
 out_bad_sb:
-    mfs_err("unable to read superblock.\n");
+    LOGE("unable to read superblock.\n");
     goto out_free_sb_msb;
 
 out_sb_nomem:
-    mfs_err("memory out.");
+    LOGE("memory out.");
     goto out_free_msb;
 
 out_free_sb_msb:

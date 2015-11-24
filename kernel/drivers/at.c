@@ -23,7 +23,11 @@
 #define port_write(port,buf,nr)\
     __asm__("cld;rep;outsw"::"d"(port),"S"(buf),"c"(nr))
 
-#define at_log(fmt,...) log("ATDisk",fmt,##__VA_ARGS__)
+#ifdef  AT_DEBUG
+    #define LOGD(fmt,...) LOG(LOG_DEBUG,"ATDisk",fmt,##__VA_ARGS__)
+#else
+    #define LOGD(...)
+#endif
 
 
 typedef struct _ioInq{
@@ -86,7 +90,7 @@ static bool at_isbusy(void)
         if( s == (ATS_READY | ATS_SEEK)) 
             return false;
     }
-    at_log("AT DiskHard controller time out.\n");
+    LOGD("AT DiskHard controller time out.\n");
     return true;
 }
 
@@ -161,7 +165,7 @@ static void at_writepage(object_t caller,void *ptr,cnt_t count,off_t offset)
 }
 
 /*! 发送读写设备给硬盘,然后返回等待硬盘准备好 !*/
-static void _io(object_t unused(caller),int irq)
+static void _io(object_t caller __unused,int irq)
 {
     (void)irq;
     int status = inb(AT_STATUS);	/* acknowledge interrupt */
@@ -176,7 +180,7 @@ static void _io(object_t unused(caller),int irq)
                 for(int i = 50000;i && !(inb_p(AT_STATUS) & ATS_DRQ);i--);
                 port_write(AT_DATA,buffer,256);
             } else  {
-                at_log("At command %x is unkonw.\n",admit->cmd);
+                LOGD("At command %x is unkonw.\n",admit->cmd);
                 panic("\erHardware IO \eb[\erFail\eb]\n");
             }
             admit->buffer += 512;
@@ -196,7 +200,7 @@ static void _io(object_t unused(caller),int irq)
 
 static void at_init(void)
 {
-    at_log("Startup...\n");
+    LOGD("Startup...\n");
     hook(IF_WRITEPAGE, at_writepage);
     hook(IF_READPAGE,at_readpage);
     hook(IF_INTR,_io);
@@ -209,7 +213,7 @@ static void at_init(void)
 int at_main(void)
 {
     at_init();
-    at_log("workloop\n");
+    LOGD("workloop\n");
     workloop();
     return 0;
 }

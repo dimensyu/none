@@ -4,6 +4,12 @@
 
 #define MAX_CONSOLES    1
 
+#ifdef  CONSOL_DEBUG
+    #define LOGD(fmt,...)   LOGD(LOG_DEBUG,"console",fmt,##__VA_ARGS__)
+#else
+    #define LOGD(...)
+#endif
+
 static  unsigned long video_mem_base;       /* base of video memory */
 static  unsigned long video_num_columns;    /* Number of text columns */
 static  unsigned long video_num_lines;      /* NUmber of text lines */
@@ -212,12 +218,12 @@ static void cons_read(object_t caller,void *ptr,cnt_t count){
 }
 
 int cons_main(void){
-    log("CONSOL","Startup...\n");
+    LOGD("Startup...\n");
     cons_init();
     keyboard_init();
     hook(IF_READ ,cons_read);
     hook(IF_WRITE,cons_write);
-    log("CONSOL","Workloop\n");
+    LOGD("Workloop\n");
     workloop();
     return 0;
 }

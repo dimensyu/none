@@ -18,7 +18,7 @@ void *mkvm(object_t o,void *ptr,cnt_t count,Registers *reg,char *name){
         char *argv[32];
         char env[0];
     } *buff = ptr;
-    int unused(rlen) = 0;
+    int rlen __unused = 0;
 
     strcpy(name,buff->argv[0]);
 

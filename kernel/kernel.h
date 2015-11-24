@@ -10,16 +10,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include "debug.h"
+#include "log.h"
 
-#define eprint(fmt,...) printk(fmt" %s %d\n",##__VA_ARGS__,__FILE__,__LINE__)
 #include <z.h>
-
-#ifdef SYS_LOG
-#define sys_log(fmt,...)    dbg("SYS",fmt,##__VA_ARGS__)
-#else
-#define sys_log(...)
-#endif
 
 extern Task *leading;
 #define self()  OBJECT(leading)
