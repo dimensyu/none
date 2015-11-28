@@ -1,5 +1,9 @@
 #include    "kernel.h"
 
+#ifdef  PRINT_SCHED
+    #define LOGD(fmt,...)   DBG("task",fmt,##__VA_ARGS__)
+#endif
+
 static Task    *rdy_head[NR_PRI];  /*! 调度队列头,参考MINIX设计 !*/
 static Task    *rdy_tail[NR_PRI];
        Task    *leading = NULL;    /*! 主角,在你的世界里,你就是主角 ~*/
@@ -35,7 +39,7 @@ static void pick_task(void)
     tss->esp0 = (unsigned long)(STACK(leading)->stackp);
 #ifdef  PRINT_SCHED
     if(oo != self() && oo->id && self()->id){
-        printk("\eb[%02d]%14s\er-> \eb[%02d]%14s<%08x>\ew\n",oo->id,oo->name,self()->id,self()->name,leading->core);
+        LOGD("\eb[%02d]%14s\er-> \eb[%02d]%14s<%08x>\ew\n",oo->id,oo->name,self()->id,self()->name,leading->core);
     }
 #endif
 }

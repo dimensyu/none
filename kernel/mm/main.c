@@ -1,11 +1,9 @@
-#include    "../kernel.h"
-#include <none/scntl.h>
 #include "vm.h"
+#include "../kernel.h"
+#include <none/scntl.h>
 
 /*! BUG !*/
 #define CMEM   0xC00000   //CONST_MEM
-
-#define mm_error(fmt,...)   printk("\er[MM   ] : \ew"fmt" %s:%d\n",##__VA_ARGS__,__FILE__,__LINE__)
 
 //#define free_page(x) ({ if((x & ~(0x3ff)) == 0x82d000) { printk("%s %d\n",__FILE__,__LINE__); } free_page(x); })
 
@@ -95,7 +93,7 @@ static int delete_table(PageItem *table){
     for(int i = 0;i < 1024;i++){
         if(isPresent(table + i)){
             try(ERROR ==,free_page(table[i].ptr),{
-                mm_error("table[%d] = %08x",i,table[i].ptr);
+                LOGE("table[%d] = %08x\n",i,table[i].ptr);
                 return ERROR;
             });
             //table[i].present = 0;     /*! share table !*/
@@ -110,7 +108,7 @@ static void _delete(PageItem *dir){
         if(isPresent(dir + i)){
             if((ERROR == delete_table((PageItem *)(PTR(dir[i].ptr)))) || 
                     (ERROR == free_page(dir[i].ptr))){
-                mm_error("  dir[%d] = %08x",i,dir[i].ptr);
+                LOGE("  dir[%d] = %08x\n",i,dir[i].ptr);
                 panic("free page fail");
             }
             dir[i].present = 0; /*! non-share dir !*/
@@ -154,7 +152,7 @@ static void np_page(object_t o,void *ptr){
         val = ERROR;
         goto err_out;
     }
-    mm_log("page : %p virtual : %p\n",page,ptr);
+    LOGD("page : %p virtual : %p\n",page,ptr);
     val = put_page((PageItem *)t->core,ptr,page);
     if(val < 0)
         goto err_out;
@@ -168,7 +166,7 @@ static PageItem *_un_table(PageItem *dir,void *va){
     PageItem *table = (void*)(((uintptr_t)dir[DIR_INDEX((uintptr_t)va)].table) & (~0xfff));
     PageItem *new_table = NULL;
     if(!(dir[DIR_INDEX((uintptr_t)va)].present)){
-        mm_error("Virtual address %08x not present.",va);
+        LOGE("Virtual address %08x not present\n",va);
         return NULL;
     };
 
@@ -180,7 +178,7 @@ static PageItem *_un_table(PageItem *dir,void *va){
 
     if(page_share_nr(dir[DIR_INDEX((uintptr_t)va)].ptr) > 1){
         try(ERROR == ,free_page(dir[DIR_INDEX((uintptr_t)va)].ptr),{
-            mm_error("Not release the virtual memory address %08x",va);
+            LOGE("Not release the virtual memory address %08x\n",va);
         });
         new_table = (void*)get_free_page();
         if(!new_table) 
@@ -196,13 +194,13 @@ static PageItem *_un_page(PageItem *table,void *va){
     PageItem *new_page = NULL;
 
     if(!(table[TABLE_INDEX((uintptr_t)va)].present)){
-        mm_error("Virtual address %08x",va);
+        LOGE("Virtual address %08x\n",va);
         return NULL;
     };
 
     if(page_share_nr(table[TABLE_INDEX((uintptr_t)va)].ptr) > 1){
         try(ERROR == ,free_page(table[TABLE_INDEX((uintptr_t)va)].ptr),{
-            mm_error("Not release the virtual memory address %08x",va);
+            LOGE("Not release the virtual memory address %08x\n",va);
         });
         new_page = (void*)get_free_page();
         if(!new_page) return NULL;
@@ -216,7 +214,7 @@ static void nw_page(object_t o,void *ptr){
     Task *t = TASK(toObject(o));
     PageItem *table = _un_table((PageItem *)t->core,ptr);
     long val = 0;
-    //mm_log("virtual : %p\n",ptr);
+    //LOGD("virtual : %p\n",ptr);
     if(!table) {
         val = ERROR;
         goto err_out;
@@ -275,13 +273,13 @@ static PageItem *__clone_space__(PageItem *space,void *page){
 static void mm_iomap(object_t o,uintptr_t phys_addr __attribute((unused)) ,
         unsigned long size __attribute__((unused)))
 {
-    todo("iomap not implemented\n");
+    LOGT("iomap not implemented\n");
     ret(o,OK);
 }
 
 static void mm_iounmap(object_t o)
 {
-    todo("iounmap not implemented\n");
+    LOGT("iounmap not implemented\n");
     ret(o,OK);
 }
 
@@ -331,7 +329,7 @@ static Task* make_task(String name,int (*entry)(void)){
 
 static void _mm_init(void) {
     Task *task;
-    mm_log("memory manage init.\n");
+    LOGD("memory manage init.\n");
     hook(MIF_CLONE,clone);
     hook(MIF_CLOSE,delete);
     hook(MIF_NOPAGE,np_page);

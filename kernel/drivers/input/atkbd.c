@@ -26,7 +26,7 @@ static void _ispress(object_t caller)
 {
     ret(caller,index);
 }
-static void _input(object_t unused(caller))
+static void _input(object_t caller __unused)
 {
     //unsigned int ch = pop();
     unsigned char ch = inb(0x60);

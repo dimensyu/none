@@ -72,7 +72,7 @@ static void get_time(object_t caller)
     ret(caller,startup_time);
 }
 
-static void _clk(Object *unused(this))
+static void _clk(Object *this __unused)
 {
     startup_time++;
 }

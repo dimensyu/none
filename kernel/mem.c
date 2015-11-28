@@ -1,16 +1,17 @@
-#include "kernel.h"
 #include <boot/multiboot.h>
 #include <none/util.h>
 #include <none/types.h>
 #include "buffer.h"
 
+#define LOGE(fmt,...) LOG(LOG_ERR,"mp",fmt,##__VA_ARGS__)
+#include "kernel.h"
+
 #ifdef  MP_DEBUG
-#define mem_log(fmt,...) log("MP",fmt,##__VA_ARGS__)
+    #define LOGD(fmt,...) DBG("mp",fmt,##__VA_ARGS__)
 #else
-#define mem_log(fmt,...)
+    #define LOGD(fmt,...)
 #endif
 
-#define mem_error mem_log
 
 #define clear_page(p)   \
     __asm__("rep stosl\n\t\t"::"a"(0),"c"(0x1000 >> 2),"D"(p));
@@ -31,7 +32,7 @@ void *get_free_page(void){
             }
         }
     }
-    mem_log("mm out.\n");
+    LOGD("mm out.\n");
     return NULL;
 }
 
@@ -49,7 +50,7 @@ void *get_kfree_page(void){
 
 int share_page(uintptr_t page){
     if(page < OBJECT_START) {
-        mem_error("Address %08x, does not require a shared kernel memory.",page);
+        LOGE("Address %08x, does not require a shared kernel memory\n",page);
         return ERROR;
     }
     mmap[page >> 12]++;
@@ -63,11 +64,11 @@ int page_share_nr(uintptr_t page){
 /* free a page in space */
 int free_page(uintptr_t page){
     if(page < OBJECT_START) {
-        mem_error("address %08x is kernel memory",page);
+        LOGE("address %08x is kernel memory\n",page);
         return ERROR;
     }
     if(mmap[page >> 12] == 0){
-        mem_error("address %08x is free memory",page);
+        LOGE("address %08x is free memory\n",page);
         return ERROR;
     }
     mmap[page >> 12]--;
@@ -117,18 +118,18 @@ void mem_init(void){
     ramdiskCount = module->mod_end - module->mod_start;
     ramdiskCount = MIN(ramdiskCount,RAMDISK_COUNT);
 
-    mem_log("%8s  %8s  %8s  %8s\n","MODULE","START","END","COUNT");
-    mem_log("%08x  %08x  %08x  %08x\n",module,module->mod_start,module->mod_end,ramdiskCount);
+    LOGD("%8s  %8s  %8s  %8s\n","MODULE","START","END","COUNT");
+    LOGD("%08x  %08x  %08x  %08x\n",module,module->mod_start,module->mod_end,ramdiskCount);
 
     /*! 将让ramdisk 拷贝到合适的位置 !*/
     memcpy((void*)RAMDISK_ADDR,mod_start,ramdiskCount);
 
     unsigned char busy = 100;
 
-    mem_log("%8s  %8s  %8s  %8s  %8s  %8s\n","TYPE","BASELOW","BASEHIGH","LENLOW","LENHIGH","SIZE");
+    LOGD("%8s  %8s  %8s  %8s  %8s  %8s\n","TYPE","BASELOW","BASEHIGH","LENLOW","LENHIGH","SIZE");
     memset(mmap,100,(unsigned char *)MMAP_END - mmap);
     for(;map < end;map++){
-        mem_log("%8s  %08x  %08x  %08x  %08x  %08x\n",
+        LOGD("%8s  %08x  %08x  %08x  %08x  %08x\n",
                 (const char *[]){[1] = "AVAILABL","RESERVED","ACPI","NVS","BADRAM"}[map->type],
                 map->base_addr_low, map->base_addr_high,map->length_low,map->length_high,map->size);
         busy = 100;

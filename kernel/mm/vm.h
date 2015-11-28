@@ -1,15 +1,19 @@
 #ifndef __NONE_VM_H__
 #define __NONE_VM_H__
-#include <none/types.h>
-#include "../task.h"
 #include <elf.h>
 #include <none/list.h>
 #include <stddef.h>
 
-#ifdef MM_LOG
-#define mm_log(fmt,...) dbg("MM",fmt,##__VA_ARGS__)
+#define LOGE(fmt,...)   LOG(LOG_ERR,MM_LOG_TARGET,fmt,##__VA_ARGS__)
+#define LOGT(fmt,...)   TODO(MM_LOG_TARGET,fmt,##__VA_ARGS__)
+
+#include "../kernel.h"
+
+#define MM_LOG_TARGET    "mm"
+#ifdef  MM_DEBUG
+    #define LOGD(fmt,...)   DBG(MM_LOG_TARGET,fmt,##__VA_ARGS__)
 #else
-#define mm_log(...)
+    #define LOGD(...)
 #endif
 
 typedef struct{
